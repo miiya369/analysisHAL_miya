@@ -1,18 +1,24 @@
 
-=================================================================================
-
-1) Create a main program in 'main' directory.
-   - Name the main program "main_anaHAL.cpp" (Or modify 'Makefile' in the directory).
-   - For construction of the program, sample programs in 'samples' may be useful.
-   - You may execute "$ sh set_main.sh [main.cpp]" for creation the simbolic link.
-
-2) Modify the 'include/Makefile.inc'
-
-3) Create a executable file.
-   - Do "make" in the top directory.
-   - You can find the executable file in 'bin' directory.
+   ***********************************************
+   *** Analysis code-set for HAL QCD potential ***
+   ***********************************************
+   
+   @ Author : Takaya Miyamoto (miiya369@gmail.com)
 
 =================================================================================
 
-For creation of library, do 'make lib'.
+ * How to build the code
+ 
+ 1) Make a main program in 'main' directory.
+    - Name the main program as "main_anaHAL.cpp" (or modify 'Makefile' in the directory).
+    - You can use "set_main.sh" to create the simbolic link to your own main program.
+ 
+ 2) Modify the 'include/Makefile.inc' if necessary.
+ 
+ 3) Create a executable file.
+    - Do "make" in the top directory.
+    - You can find the executable file in 'bin' directory.
+ 
+ Note : Do 'make lib' if you want the library of this code.
 
+=================================================================================
