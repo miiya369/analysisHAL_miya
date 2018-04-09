@@ -1,0 +1,65 @@
+
+======================================================
+         The definition of fit function type         
+======================================================
+
+ The fit function type is classified 
+ by simple abridged notation.
+
+ 'SW' := 1-dim squre-well potential (For debug)
+      #.param = 2 (r0 and V0)
+      f(r) := V0 (r <= r0), := 0 (r0 < r)
+
+ 'NP' := (N terms) Power Series
+      #.param = N
+      f(r) := p0 + p1 * r + p2 * r^2 + ...
+
+ 'NE' := (N term) Exponential
+      #.param = 2 * N
+      f(r) := p0 * exp[-p1 * r] + ...
+
+ 'NG' := (N term) Gaussian
+      #.param = 2 * N
+      f(r) := p0 * exp[-(r / p1)^2] + ...
+
+ 'NSG' := (N term) Shift-Gaussian
+      #.param = 3 * N
+      f(r) := p0 * exp[-((r-p2) / p1)^2] + ...
+
+ 'NY' := (N term) Yukawa (one Form-Factor included)
+      #.param = 3 * N
+      f(r) := p0 * (1 - exp[-p1*r^2]) * exp[-p2*r]/r + ...
+      Note: f(0) is defined as f(0) := 0
+
+ 'NYsq' := (N term) Yukawa square (one Form-Factor included)
+      #.param = 3 * N
+      f(r) := p0 * (1 - exp[-p1*r^2])^2 * exp[-2*p2*r]/r^2 + ...
+      Note: f(0) is defined as f(0) := 0
+
+ 'NYtns' := (N term) Yukawa tensor force
+      #.param = 3 * N
+      f(r) := p0 * (1 - exp[-p1*r^2])^2 * (1 + 3/(a2*r) + 3/(p2*r)^2) * exp[-p2*r]/r + ...
+      Note: f(0) is defined as f(0) := 0
+
+ 'NCH' := (N term) cosh
+      #.param = 2 * N
+      f(r) := p0 * cosh(-p1 * r)
+
+=== Note ===
+
+ The character 'N' in above definition can be replaced 
+ various numbers. for example,
+
+ '3G' => 3-ranges Gaussian
+ '2Y' => 2-ranges Yukawa
+
+=== Additional functions ===
+ 
+ 2G1Y := 2G + 1Y
+ 2G2Y := 2G + 2Y
+ 
+ 2G1Ysq := 2G + 1Ysq
+ 3G1Ysq := 3G + 1Ysq
+ 
+ 2G1Y1Ysq := 2G + 1Y + 1Ysq
+

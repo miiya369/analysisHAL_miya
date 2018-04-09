@@ -1,0 +1,21 @@
+#!/bin/sh
+
+OPTION=-fopenmp
+
+LIME_DIR=$HOME/local/extra/lime-1.3.2
+
+g++ $OPTION -O3 limed_ildg.cpp \
+-I$LIME_DIR/include -I./include \
+-L$LIME_DIR/lib -llime \
+-o limed_ildg
+
+g++ $OPTION -O3 plaq_compare.cpp \
+-I$LIME_DIR/include -I./include \
+-L$LIME_DIR/lib -llime \
+-o plaq_compare
+
+g++ $OPTION -O3 gfix_from_gmat.cpp \
+-I$LIME_DIR/include -I./include \
+-L$LIME_DIR/lib -llime \
+-o gfix_from_gmat
+

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ $# -ne 3 ]; then
+    echo "Should_Be_Put_3_Arguments_srcT_conf_txyz___You_can_use_wild_card_?_and_@_instead_of_*"
+else
+    if [ $2 == "@" ]; then
+	CONF="*"
+    else
+	for i in `seq 595 70 1435`; do
+	    if [ $2 -ge $i ]; then
+		CONF=`printf %06d $i`-`printf %06d $((i+60))`
+	    fi
+	done
+    fi
+    echo "/gwfefs/data/G16030/miyamoto/work.K/work.run-i.traj_mod10_5/run.t_mod24_??/run.t_???.rot_tot/logs.t_???/run.out.run_i.t_$1.$CONF.rot_$3"
+fi

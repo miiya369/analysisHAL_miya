@@ -1,0 +1,18 @@
+
+=================================================================================
+
+1) Create a main program in 'main' directory.
+   - Name the main program "main_anaHAL.cpp" (Or modify 'Makefile' in the directory).
+   - For construction of the program, sample programs in 'samples' may be useful.
+   - You may execute "$ sh set_main.sh [main.cpp]" for creation the simbolic link.
+
+2) Modify the 'include/Makefile.inc'
+
+3) Create a executable file.
+   - Do "make" in the top directory.
+   - You can find the executable file in 'bin' directory.
+
+=================================================================================
+
+For creation of library, do 'make lib'.
+
