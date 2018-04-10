@@ -11,7 +11,7 @@
  
  1) Make a main program in 'main' directory.
     - Name the main program as "main_anaHAL.cpp" (or modify 'Makefile' in the directory).
-    - You can use "set_main.sh" to create the simbolic link to your own main program.
+    - You can use "set_main.sh" to create the symbolic link to your own main program.
  
  2) Modify the 'include/Makefile.inc' if necessary.
  
@@ -22,3 +22,6 @@
  Note : Do 'make lib' if you want the library of this code.
 
 =================================================================================
+   
+   @ For detail, see docs/manual_analysisHAL.pdf
+
