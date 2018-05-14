@@ -64,8 +64,8 @@ def main ():
     
     for ires in range(Nrestart):
         ResParams = np.array([curve_fit(Ffunction, xData, yData[iconf,:], 
-                                        sigma=eData, p0=iparams, bounds=LU_bounds)[0]
-                                        #, maxfev=Max_iter)[0]
+                                        sigma=eData, p0=iparams, bounds=LU_bounds #)[0]
+                                        , maxfev=Max_iter)[0]
                                         #, max_nfev=Max_iter)[0]
                               for iconf in range(Nconf)])
         
@@ -80,7 +80,7 @@ def main ():
     
 ### Print Results ###
     print("#\n# === Fitting Results (Fin) ===")
-    mean, err = common.statistics.make_mean_err(Chisq_dof)
+    mean, err = make_mean_err(Chisq_dof)
     print("# Chisq/dof = %15lf +/- %15lf (%15.6f %%)" % (mean, err, abs(err/mean) * 100))
     
     tmpParams = np.array([make_mean_err(ResParams[:,iparam]) for iparam in range(Nparam)])

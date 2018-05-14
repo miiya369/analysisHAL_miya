@@ -9,6 +9,19 @@ from numpy.linalg import inv
 
 import cmath
 
+def func_Helmholtz_ode(a_phi, a_rho, a_l):
+    """
+    The function for 'odeint' to solve the Helmholtz equation.
+    
+    For arguments,
+    - a_rho    (double scalar)
+    - a_phi[2] (1-dim ndarray)
+    - a_l      (int    scalar)
+    
+    Note: The all of variables are assumed as dimension-less
+    """
+    return array([a_phi[1], (a_l*(a_l+1)/a_rho**2 - 1) * a_phi[0]])
+
 def func_sch_ode(a_Phi, a_r, a_PotFunc, a_Params, a_E, a_Mu, a_l = 0):
     """
     The function for 'odeint' to solve the NxN Schrodinger equation.

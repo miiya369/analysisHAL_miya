@@ -1,0 +1,31 @@
+
+ ### === Setup of Test Data For Analysis HAL === ###
+ 
+    1. Configuration
+       - CP-PACS configuration for flavor-SU(3)
+       - 16^3 x 32
+       - Kappa = 0.13710
+       - Csw   = 1.76100
+       - Lattice spacing ~ 0.1215 fm (= 1624 MeV)
+    
+    2. Quark propagator
+       - Wall source
+       - BiCGstab solvor (Bridge++)
+       - Convergence criterion (squared) = 1.0e-24
+    
+    3. Calculated observables
+       - Single hadron correlator for nucleon
+       - 4pt correlation function for NN-channel
+    
+    4. Total statistics
+       - 10 confs.
+       - In the each conf, 
+         32 (source) x 2 (forward/backward) average
+	 was carried out.
+    
+    5. Mass
+       - Pion    ~ 0.622 (= 1010 MeV)
+       - Nucleon ~ 1.244 (= 2020 MeV)
+ 
+ ### =========================================== ###
+

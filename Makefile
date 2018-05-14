@@ -5,15 +5,11 @@ all:
 	cd src;  make $@
 	cd main; make $@
 
-test:
-	cd src;  make all
-	cd main; make $@
-
-miya:
+sample:
 	cd src;  make all
 	cd main; make $@
 
 lib:
 	cd src;  make all
 
-.PHONY: all test miya lib
+.PHONY: all sample lib

@@ -4,9 +4,9 @@
 # Note: The name of variable should be 'x'
 
 ### 3G       (c.ens2; t=10; r=0.001-2.0fm; lim=1e-7; chisq/dof=0.811394)
-FitFunc="a1 * exp(-(x/b1)**2) + a2 * exp(-(x/b2)**2) + a3 * exp(-(x/b3)**2)"
-ParamsInit=(1524.09767404624 0.116916512674567 461.216801509866 0.299118278078935 -51.1603131391376 0.773100797986594)
-ParamsList=(a1 b1 a2 b2 a3 b3)
+#FitFunc="a1 * exp(-(x/b1)**2) + a2 * exp(-(x/b2)**2) + a3 * exp(-(x/b3)**2)"
+#ParamsInit=(1524.09767404624 0.116916512674567 461.216801509866 0.299118278078935 -51.1603131391376 0.773100797986594)
+#ParamsList=(a1 b1 a2 b2 a3 b3)
 
 ### 4G       (c.ens1; t=13; r=0.001-2.0fm; lim=1e-7; chisq/dof=)
 #FitFunc="a1 * exp(-(x/b1)**2) + a2 * exp(-(x/b2)**2) + a3 * exp(-(x/b3)**2) + a4 * exp(-(x/b4)**2)"
@@ -24,9 +24,9 @@ ParamsList=(a1 b1 a2 b2 a3 b3)
 #ParamsList=(a1 a2 a3 a4 a5 a6 a7 a8 a9)
 
 ### 2G1Y     (c.ens2; t=10; r=0.001-2.0fm; lim=1e-7; chisq/dof=0.967228)
-#FitFunc="a1 * exp(-(x/a2)**2) + a3 * exp(-(x/a4)**2) + a5 * (1-exp(-a6*x**2))    * exp(-  a7*x)/x"
-#ParamsInit=(1497.02243954189 0.118150020065909 444.329721588973 0.311776311948295 -588.246834072043 0.922070729303004 3.64571522933845)
-#ParamsList=(a1 a2 a3 a4 a5 a6 a7)
+FitFunc="a1 * exp(-(x/a2)**2) + a3 * exp(-(x/a4)**2) + a5 * (1-exp(-a6*x**2)) * exp(-a7*x)/x"
+ParamsInit=(1497.02243954189 0.118150020065909 444.329721588973 0.311776311948295 -588.246834072043 0.922070729303004 3.64571522933845)
+ParamsList=(a1 a2 a3 a4 a5 a6 a7)
 
 ### 2G1Ysq1Y (c.ens2; t=10; r=0.001-2.0fm; lim=1e-7; chisq/dof=0.427729)
 #FitFunc="a1 * exp(-(x/a2)**2) + a3 * exp(-(x/a4)**2) + a5 * (1-exp(-a6*x**2))**2 * exp(-2*a7*x)/x**2 + a8 * (1-exp(-a9*x**2)) * exp(-a10*x)/x"
