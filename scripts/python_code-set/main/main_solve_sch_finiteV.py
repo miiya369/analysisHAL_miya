@@ -4,89 +4,96 @@
 from __future__ import print_function
 
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../lib")
 import numpy as np
 import time
 
-from common.io_data_bin            import input_bin_data_nxyz
-from sch_finiteV.solve_sch_finiteV import solve_sch_Fvol
-from sch_finiteV.print_results     import print_results, output_results
-from lattice.phase_shift_Luscher   import k_cot_d_Luscher
-from misc_QM.scattering_Idogata    import tan_d_Idogata3D, Eb_Idogata3D_Swave
-
 ### ================== Global Parameters Init. ================= ###
 ifname  = None
-rmass   = 0.6215
+mass    = 0.5
 lat_a   = None
-Nret    = 40
+Nstat   = 3
 Lsize   = 16
-ofbase  = None
+Nproc   = 1
 
-EigValOnly = True
+eval_only = True
+ofbase    = None
 
 hbar_c  = 197.327053
+dummy_d = None
 
-### For Debug
-Vzero   = -200.0
-Rzero   = 1.0
-mu      = 500
-dummy_d = 0.0
+def fproc_wrapper(args):
+    from sch_finiteV.solve_sch_finiteV import solve_sch_Fvol
+    a_iconf     = args[0]
+    a_pot       = args[1]
+    a_mass      = args[2]
+    a_Lsize     = args[3]
+    a_Nstat     = args[4]
+    a_eval_only = args[5]
+    results = solve_sch_Fvol(a_pot, a_mass, a_Lsize, a_Nstat, not a_eval_only)
+    print("# Solve Schrodinger equation in the finite volume... %3d end" % a_iconf)
+    return results
 ### =========================== Main =========================== ###
 def main():
-    t_start = time.time()
+    from common.io_data_bin      import input_bin_data_nxyz
+    from sch_finiteV.print_eigen import print_eigen, output_eigen
     
 ### Input parameters ###
     if (ifname != 'DEBUG'):
-        Pot = input_bin_data_nxyz(ifname, data_type = "float")
-        if (Pot is None):
+        pot = input_bin_data_nxyz(ifname, data_type = "float")
+        if (pot is None):
             return -1
-        Nconf = len(Pot[:,0,0,0])
+        Nconf = len(pot[:,0,0,0])
     else:
         ### For Debug
+        from misc_QM.scattering_Idogata import Eb_Idogata3D_Swave
+        global mass, lat_a
+        if (lat_a is None):
+            lat_a = 0.5
+        Vzero = -50.0; Rzero = 2.0; mass = 500.0
+        #Vzero = -100.0; Rzero = 4.0; mass = 1000.0
+        Nconf = 1
+        pot   = np.array([[[[Vzero * lat_a/hbar_c if (np.sqrt(x**2+y**2+z**2) < Rzero/lat_a) else 0.0
+                             for x in range(Lsize)] for y in range(Lsize)] for z in range(Lsize)]
+                          for i in range(Nconf)])
         print("# DEGUB MODE...")
         print("# V_0 (MeV) =", Vzero)
         print("# R_0 ( fm) =", Rzero)
-        print("#  mu (MeV) =",    mu)
+        print("# mass(MeV) =", mass )
         print("#   a ( fm) =", lat_a)
         print("# Func type = 3-dim Idogata")
-        print("# Expect En =", Eb_Idogata3D_Swave(Vzero, Rzero, mu))
-        #test(Vzero, Rzero, mu, dummy_d * lat_a / hbar_c); return 0
-        Nconf  = 1
-        Pot    = np.zeros((Nconf, Lsize, Lsize, Lsize))
-        for i in range(Nconf):
-            for z in range(Lsize):
-                for y in range(Lsize):
-                    for x in range(Lsize):       
-                        if (np.sqrt(x**2 + y**2 + z**2) < Rzero/lat_a):
-                            Pot[i,z,y,x] = Vzero * lat_a / hbar_c
+        print("# Expect En =", Eb_Idogata3D_Swave(Vzero, Rzero, mass))
+        if (dummy_d is not None):
+            test(Vzero, Rzero, mass, dummy_d * lat_a/hbar_c); return 0
+        else:
+            mass *= lat_a/hbar_c
     
-    Results = np.array([])
-    print("#")
-    for i in range(Nconf):
-        Results = np.append(Results, solve_sch_Fvol(Pot[i,:,:,:],
-                                                    rmass, Lsize, Nret, not EigValOnly))
-        print("# conf = %03d/%03d end." % (i+1, Nconf))
-    
-    if (EigValOnly):
-        EigVal = np.reshape(Results, (Nconf, Nret))
-        EigVec = None
+### Solve the Schrodinger equation in the finite volume ###
+    print("#\n# Solve Schrodinger equation in the finite volume...")
+    if (Nproc == 1):
+        eigens = np.array([fproc_wrapper((iconf, pot[iconf], mass, Lsize, Nstat, eval_only)) for iconf in range(Nconf)])
     else:
-        EigTmp = np.reshape(Results, (Nconf,    2))
-        EigVal = np.array([EigTmp[i,0] for i in range(Nconf)])
-        EigVec = np.array([EigTmp[i,1] for i in range(Nconf)])
-        
+        args_procs = [(iconf, pot[iconf], mass, Lsize, Nstat, eval_only) for iconf in range(Nconf)]
+        with Pool(Nproc) as proc:
+            eigens = np.array(proc.map(fproc_wrapper, args_procs))
+    print("# Solve Schrodinger equation in the finite volume... all end")
+    
+### print results ###
+    if (eval_only):
+        eval = eigens
+        evec = None
+    else:
+        eval = np.array([eigens[iconf,0] for iconf in range(Nconf)])
+        evec = np.array([eigens[iconf,1] for iconf in range(Nconf)])
         for i in range(Nconf):
-            for k in range(Nret):
-                if (EigVec[i,1,k] < 0):
-                    EigVec[i,:,k] *= -1.0
+            for k in range(Nstat):
+                if (evec[i,1,k] < 0):
+                    evec[i,:,k] *= -1.0
     
-    print_results(EigVal, EigVec, lat_a, EigValOnly)
-    print("#")
-    
+    print_eigen(eval, evec, lat_a, eval_only)
     if (ofbase is not None):
-        output_results(ofbase, EigVal, EigVec, lat_a, EigValOnly)
+        output_eigen(ofbase, eval, evec, lat_a, eval_only)
     
-    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))
     return 0
 
 ### ============================================================ ###
@@ -94,27 +101,29 @@ def main():
 def usage(ARGV0):
     print("usage  : python %s [ifile] {options}\n" % os.path.basename(ARGV0))
     print("options:")
-    print("      --rmass       [reduced mass (Lattice Unit)] Default =", rmass)
-    print("      --lat_a       [Lattice spacing        (fm)] Default =", lat_a)
-    print("      --Nret        [#.eigen value to calculate ] Default =", Nret)
-    print("      --Lsize       [Lattice size  to calculate ] Default =", Lsize)
-    print("      --out_wave     Output wave function")
-    print("      --ofbase      [Base name for output files ] Default =", ofbase)
+    print("      --mass     [reduced mass (Lattice Unit)] Default =", mass)
+    print("      --lat_a    [Lattice spacing        (fm)] Default =", lat_a)
+    print("      --Nstat    [#.eigen state to calculate ] Default =", Nstat)
+    print("      --Lsize    [Lattice size  to calculate ] Default =", Lsize)
+    print("      --Nproc    [#.process                  ] Default =", Nproc)
+    print("      --out_wave  Output wave function")
+    print("      --ofbase   [Base name for output files ] Default =", ofbase)
     exit(1)
 
 def check_args():
     print("# === Check Arguments ===")
     print("# ifile     =", ifname)
-    print("# rmass     =", rmass)
+    print("# mass      =", mass)
     print("# lat.space =", lat_a)
     print("# Lsize     =", Lsize)
-    print("# N.retarn  =", Nret)
-    print("# out wave  =", (not EigValOnly))
+    print("# N.state   =", Nstat)
+    print("# N.process =", Nproc)
+    print("# out wave  =", (not eval_only))
     print("# ofbase    =", ofbase)
     print("# =======================")
 
 def set_args(ARGC, ARGV):
-    global ifname, rmass, lat_a, Nret, Lsize, EigValOnly, dummy_d, ofbase
+    global ifname, mass, lat_a, Nstat, Lsize, Nproc, eval_only, dummy_d, ofbase
     
     if (ARGV[1][0] == '-'):
         usage(ARGV)
@@ -125,50 +134,52 @@ def set_args(ARGC, ARGV):
         if (len(ARGV[i]) == 1):
             continue
         if (ARGV[i][0] == '-' and ARGV[i][1] == '-'):
-            if   (ARGV[i] == '--rmass'):
-                rmass = float(ARGV[i+1])
+            if   (ARGV[i] == '--mass'):
+                mass = float(ARGV[i+1])
             elif (ARGV[i] == '--lat_a'):
                 lat_a = float(ARGV[i+1])
             elif (ARGV[i] == '--Lsize'):
                 Lsize = int(ARGV[i+1])
-            elif (ARGV[i] == '--Nret'):
-                Nret = int(ARGV[i+1])
+            elif (ARGV[i] == '--Nstat'):
+                Nstat = int(ARGV[i+1])
+            elif (ARGV[i] == '--Nproc'):
+                Nproc = int(ARGV[i+1])
             elif (ARGV[i] == '--out_wave'):
-                EigValOnly = False
+                eval_only = False
             elif (ARGV[i] == '--ofbase'):
                 ofbase = ARGV[i+1].strip()
             elif (ARGV[i] == '--test'):
                 dummy_d = float(ARGV[i+1])
             else:
-                print("\nERROR: Invalid option '%s'" % ARGV[i])
+                print("\nERROR: Invalid option '%s'\n" % ARGV[i])
                 usage(ARGV[0])
-    
-    if (ifname == 'DEBUG'):
-        rmass = mu * lat_a / hbar_c
     
     check_args()
 
-def test(V0, R0, Mu, EigVal):
-    #if (True):
+def test(V0, R0, Mu, eval):
+    from misc_QM.scattering_Idogata  import tan_d_Idogata3D
+    from lattice.phase_shift_Luscher import k_cot_d_Luscher
+    print("#")
     if (False):
         for k in range(0, 1000, 1):
             print(k**2,
                   k/tan_d_Idogata3D(k, V0, R0, Mu, 0),
-                  k_cot_d_Luscher((k * lat_a / hbar_c)**2, Lsize) * hbar_c / lat_a)
+                  k_cot_d_Luscher((k * lat_a/hbar_c)**2, Lsize) * hbar_c/lat_a)
     else:
-        Mu *= lat_a / hbar_c
-        k2  = 2.0*Mu*EigVal * (hbar_c / lat_a)**2
-        print(k2, k_cot_d_Luscher(2.0*Mu*EigVal, Lsize) * hbar_c / lat_a)
+        Mu *= lat_a/hbar_c
+        k2  = 2.0*Mu*eval * (hbar_c/lat_a)**2
+        print(k2, k_cot_d_Luscher(2.0*Mu*eval, Lsize) * hbar_c/lat_a)
 
 ### ============================================================ ###
 ### ============================================================ ###
 if __name__ == "__main__":
     argv = sys.argv; argc = len(argv)
-    
     if (argc == 1):
         usage(argv[0])
     
     set_args(argc, argv)
     
+    t_start = time.time()
     if (main() != 0):
         exit("ERROR EXIT.")
+    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))

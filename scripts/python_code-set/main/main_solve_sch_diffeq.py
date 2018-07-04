@@ -4,18 +4,9 @@
 from __future__ import print_function
 
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../lib")
 import numpy as np
 import time
-
-from common.statistics         import make_mean_err
-from fitting.io_params         import input_params
-from fitting.fitfunc_type      import set_fitfunc_from_fname
-from sch_diffeq.io_param_files import input_NxN_params
-from sch_diffeq.solve_diffeq   import solve_sch_diff
-from Tmatrix.io_Tmatrix        import output_Tmatrix
-from Tmatrix.convert_mat       import convert_TtoS
-from Tmatrix.calc_phase_shift  import calc_phase_Nch1
 
 ### ================== Global Parameters Init. ================= ###
 hbar_c = 197.327053
@@ -30,28 +21,54 @@ Edel   = 1.0
 Emax   = 100.0
 Rmax   = 10.0
 Nch    = 1
+Nproc  = 1
+
+def fproc_wrapper(args):
+    from sch_diffeq.solve_diffeq import solve_sch_diff
+    a_iconf     = args[0]
+    a_iphi      = args[1]
+    a_fit_funcs = args[2]
+    a_params    = args[3]
+    a_mass      = args[4]
+    a_Edata     = args[5]
+    a_l         = args[6]
+    a_Rini      = args[7]
+    a_Rmax      = args[8]
+    results = solve_sch_diff(a_iphi, a_fit_funcs, a_params, a_mass, a_Edata, a_l, a_Rini, a_Rmax)
+    print("# Calculate T-matrix... %3d end" % a_iconf)
+    return results
 ### =========================== Main =========================== ###
+
 def main():
-    t_start = time.time()
+    from multiprocessing import Pool
+    
+    from common.statistics         import make_mean_err
+    from fitting.io_params         import input_params
+    from fitting.fitfunc_type      import set_fitfunc_from_fname
+    from sch_diffeq.io_param_files import input_NxN_params
+    from sch_diffeq.solve_diffeq   import solve_sch_diff
+    from Tmatrix.io_Tmatrix        import output_Tmatrix
+    from Tmatrix.convert_mat       import convert_TtoS
+    from Tmatrix.calc_phase_shift  import calc_phase_Sii
     
 ### Input the potential func_type and parameters ###
     if (Nch == 1):
         TmpFuncName, TmpParams = input_params(ifname)
         if (TmpFuncName is TmpParams is None):
             return -1
-        FuncName = np.array([[TmpFuncName ]])
-        Params   = np.array([[TmpParams   ]])
-        mass     = np.array([[mass1, mass2]])
+        func_name = np.array([[TmpFuncName ]])
+        params    = np.array([[TmpParams   ]])
+        mass      = np.array([[mass1, mass2]])
     else:
-        FuncName, Params, mass = input_NxN_params(ifname)
-        if (FuncName is Params is mass is None):
+        func_name, params, mass = input_NxN_params(ifname)
+        if (func_name is params is mass is None):
             return -1
-        if (Nch != len(Params[:,0,0,0])):
+        if (Nch != len(params[:,0,0,0])):
             print("\nERROR: Different #.ch in the NxN parameters file " +
-                  "(%d != %d), exit." % (Nch, len(Params[:,0,0,0]))); return -1
+                  "(%d != %d), exit." % (Nch, len(params[:,0,0,0]))); return -1
     
 ### Set the potential func_type ###
-    fit_funcs = np.array([[set_fitfunc_from_fname(FuncName[ich][jch])
+    fit_funcs = np.array([[set_fitfunc_from_fname(func_name[ich][jch])
                            for jch in range(Nch)] for ich in range(Nch)])
     
 ### Set the energies to calculate ###
@@ -62,17 +79,24 @@ def main():
         Edata = np.array([float(line.split()[0].strip()) for line in open(ifengy, 'r')])
         N_E   = len(Edata)
     
+### Set the initial wave functions ###
+    iphi = np.zeros((Nch, 2*Nch))
+    for ich in range(Nch):
+        iphi[ich, ich+Nch] = 1.0
+    
 ### T-matrix calculation ###
-    Nconf  = len(Params[0,0,:,0])
-    Nparam = len(Params[0,0,0,:])
-    Tmat   = np.empty((Nconf, N_E, Nch, Nch), dtype=complex)
+    Nconf = len(params[0,0,:,0])
+    l_in  = np.zeros(Nch, dtype=int)
     print("#\n# Calculate T-matrix...")
-    for iconf in range(Nconf):
-        tmpParams = np.array([[[Params[ich,jch,iconf,iparam]
-                                for iparam in range(Nparam)] 
-                               for jch in range(Nch)] for ich in range(Nch)])
-        Tmat[iconf,:,:,:] = solve_sch_diff(fit_funcs, tmpParams, mass, Edata, Rmax)
-        print("# Calculate T-matrix... end: iconf=%03d" % iconf)
+    if (Nproc == 1):
+        Tmat = np.array([fproc_wrapper((iconf, iphi, fit_funcs, params[:,:,iconf,:], 
+                                        mass, Edata, l_in, 1e-6, Rmax)) for iconf in range(Nconf)])
+    else:
+        args_procs = [(iconf, iphi, fit_funcs, params[:,:,iconf,:], mass, Edata, l_in, 1e-6, Rmax)
+                      for iconf in range(Nconf)]
+        with Pool(Nproc) as proc:
+            Tmat = np.array(proc.map(fproc_wrapper, args_procs))
+    print("# Calculate T-matrix... all end\n#")
     
 ### Output T-matrix ###
     output_Tmatrix(ofname, Edata, Tmat)
@@ -80,41 +104,34 @@ def main():
         return 0
     
 ### Output the Phase shift & Calculation of the Scattering length (For #.ch == 1) ###
-    convert_TtoS(Tmat)
-    
+    Smat = np.array([[convert_TtoS(Tmat[iconf,iE,:,:]) for iE in range(N_E)] for iconf in range(Nconf)])
     tmp_mu = (mass1*mass2)/(mass1+mass2)
+    
     Edata[Edata==0.0] = 1e-10 # To avoid zero-div
-    
-    PhaseShift = np.array([[calc_phase_Nch1(Tmat[iconf,iE,0,0])[0]
-                            for iE in range(N_E)] for iconf in range(Nconf)])
-    
+    PhaseShift = np.array([ calc_phase_Sii(Smat[iconf,:,0,0])[0] for iconf in range(Nconf)])
     ScatLength = np.array([[(np.tan (PhaseShift[iconf] * np.pi/180) /
                              np.sqrt(2.0 * tmp_mu * Edata[iE]) * hbar_c)
                             for iE in range(N_E)] for iconf in range(Nconf)])
-    
     Edata[Edata==1e-10] = 0.0
+    
     print("#\n# E, phs, phs_e, scatt.len, scatt.len_e")
     for iE in range(N_E):
-        mean1, err1 = make_mean_err(PhaseShift[:,iE])
-        mean2, err2 = make_mean_err(ScatLength[:,iE])
-        print("%lf %e %e %e %e" % (Edata[iE], mean1, err1, mean2, err2))
+        print("%lf %e %e %e %e" % (Edata[iE],
+                                   *make_mean_err(PhaseShift[:,iE]),
+                                   *make_mean_err(ScatLength[:,iE])))
     
     # Scattering length [fm] := T(p)/p (p->0)
-    TmpTmat    = np.array([solve_sch_diff(fit_funcs, np.array([[Params[0,0,iconf,:]]]),
-                                          mass, np.array([1e-10]), Rmax)[0,0,0]
-                          for iconf in range(Nconf)])
-    ScatLength = TmpTmat / np.sqrt(2.0 * tmp_mu * 1e-10) * hbar_c
-    m_r, e_r   = make_mean_err(ScatLength.real)
-    m_i, e_i   = make_mean_err(ScatLength.imag)
-    print("#\n# Scattering length [fm] = %lf(%lf) + %lf(%lf) i" % (m_r, e_r, m_i, e_i))
-    
-    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))
+    ScatLength = np.array([solve_sch_diff(iphi, fit_funcs, params[:,:,iconf,:],
+                                          mass, np.array([1e-10]), l_in, 1e-6, Rmax)[0,0,0]
+                           for iconf in range(Nconf)]) / np.sqrt(2.0 * tmp_mu * 1e-10) * hbar_c
+    print("#\n# Scattering length [fm] = %lf(%lf) + %lf(%lf) i" % (*make_mean_err(ScatLength.real),
+                                                                   *make_mean_err(ScatLength.imag)))
     return 0
 
 ### ============================================================ ###
 ###### Functions for arguments
 def usage(ARGV0):
-    print("usage  : python %s [params data or NxN summarized file] {options}" % os.path.basename(ARGV0))
+    print("usage  : python %s [params data or NxN summarized file] {options}\n" % os.path.basename(ARGV0))
     print("options:")
     print("      --ofile [Output file name (For T-matrix)   ] Default =", ofname)
     print("      --mass1 [Mass of 1st baryon (For #.ch=1)   ] Default =", mass1)
@@ -125,7 +142,8 @@ def usage(ARGV0):
     print("      --Emax  [Maximum energy  for output        ] Default =", Emax)
     print("      --Rmax  [Maximum  range  for output        ] Default =", Rmax)
     print("      --Nch   [#.channel                         ] Default =", Nch)
-    exit("\nNote: The mass, energy and range are should be physical unit (MeV, fm).")
+    print("      --Nproc [#.process                         ] Default =", Nproc)
+    exit("\nNote: The potentials, masses, energies and range are should be physical unit (MeV, fm).")
 
 def check_args():
     print("# === Check Arguments ===")
@@ -139,16 +157,17 @@ def check_args():
     print("# E del =", Edel)
     print("# E max =", Emax)
     print("# R max =", Rmax)
+    print("# Nproc =", Nproc)
     print("# =======================")
 
 def set_args(ARGC, ARGV):
-    global ifname, ifengy, ofname, mass1, mass2, Emin, Edel, Emax, Rmax, Nch
+    global ifname, ifengy, ofname, mass1, mass2, Emin, Edel, Emax, Rmax, Nch, Nproc
     
     if (ARGV[1][0] == '-'):
         usage(ARGV[0])
     
     ifname = ARGV[1].strip()
-
+    
     for i in range(2, ARGC):
         if (len(ARGV[i]) == 1):
             continue
@@ -195,21 +214,23 @@ def set_args(ARGC, ARGV):
                 if (Nch != 1):
                     mass1 = 'From the file'
                     mass2 = 'From the file'
+            elif (ARGV[i] == '--Nproc'):
+                Nproc = int(ARGV[i+1])
             else:
-                print("\nERROR: Invalid option '%s'" % ARGV[i])
+                print("\nERROR: Invalid option '%s'\n" % ARGV[i])
                 usage(ARGV[0])
     
     check_args()
-
 ### ============================================================ ###
 ### ============================================================ ###
 if __name__ == "__main__":
     argv = sys.argv; argc = len(argv)
-
     if (argc == 1):
         usage(argv[0])
-
+    
     set_args(argc, argv)
-
+    
+    t_start = time.time()
     if (main() != 0):
         exit("ERROR EXIT.")
+    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))

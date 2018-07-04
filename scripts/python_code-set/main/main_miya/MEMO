@@ -1,0 +1,7 @@
+@ The code which modified based on main_base.py
+   - main_solve_sch_gauss_exp.py
+   - main_fitting*.py
+   - main_solve_sch_diffeq*.py
+   - main_analysis_fitparam.py
+   - main_analysis_Tmatrix.py
+   - main_solve_sch_finiteV.py

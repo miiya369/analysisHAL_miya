@@ -40,8 +40,8 @@ Takaya Miyamoto \\
 %------------------------------------------------------------------------------------------------------------
 %------------------------------------------------------------------------------------------------------------
 \section{コード全体の概要}
-本コードは、\textcolor{red}{HAL QCD法を用いたLattice QCD potentialの計算とその解析}を目的として構築されている。
-使用する言語はC/C++もしくはpython3で、基本的な設計として以下を想定している。\\
+本コードは、\textcolor{red}{HAL QCD法を用いたLattice QCD potentialの計算とその解析}を目的として構築されています。
+使用する言語はC/C++もしくはpython3で、基本的な設計として以下を想定しています。\\
 \begin{itembox}[l]{基本設計}
 	\begin{description}
 		\setlength{\itemsep}{0.3cm}
@@ -50,18 +50,72 @@ Takaya Miyamoto \\
 		\setlength{\itemsep}{0.3cm}
 		\item[python3] \mbox{} \\
 		C/C++で作られたポテンシャルの解析のために用いる
+		\begin{itemize}
+			\item{(例１)} ポテンシャルのフィッティング
+			\item{(例２)} 位相差、T行列等の観測量の計算
+		\end{itemize}
 	\end{description}
 \end{itembox} \\
 
-なお、C/C++では外部ライブラリ（boostなど）を使わないように設計してあるが、python3では\textcolor{red}{少なくともNumpyとScipy}、
-できればMatplotlibとnpmathもインストールしていることを想定している。\\
+なお、C/C++では外部ライブラリ（boostなど）を使わないように設計してありますが、python3では\textcolor{red}{少なくともNumpyとScipy}、できればMatplotlibとnpmathもインストールしていることを想定しています。\\
 
-\textcolor{blue}{また、python3コードはできるだけpython2と互換性のあるように設計しているが、確実に動くという保証はありません。}
+\textcolor{blue}{また、python3コードはできるだけpython2と互換性のあるように設計してありますが、確実に動くという保証はありません。}
 %------------------------------------------------------------------------------------------------------------
 %------------------------------------------------------------------------------------------------------------
 \section{C/C++コード}
+この章では、{\verb analysisHAL_miya} の中のC/C++コードで実装されているクラス・関数等の詳細と使い方を解説します。 
+基本的には、共通のルーチンをベースクラスやテンプレートクラスにまとめ、実際に用いるクラスはそれらを継承したものにしています。現在（\textcolor{blue}{Version 2}）実装されているベースクラス・テンプレートクラスを以下に示します。\\
+\begin{itembox}[l]{C/C++コードで実装されているベースクラス・テンプレートクラス}
+	\begin{description}
+		\item[・ComplexField\_BASE] \mbox{} \\
+		複素数の場の量を扱うベースクラス
+		\item[・STATISTICS<X>] \mbox{} \\
+		いくつかのサンプルについて、統計計算をするテンプレートクラス
+		\item[・MATRIX\_TEMPLATE\_BASE<X>] \mbox{} \\
+		いくつかのサンプルについて、統計計算をするテンプレート（ベース）クラス
+	\end{description}
+\end{itembox} \\
+
+この中でも特に重要なのが複素数の場の量を扱うための「\textcolor{red}{ComplexField\_BASE}」クラスであり、\ref{sec:C_Class_ComplexField}章にて詳しく解説します。また\ref{sec:C_Class_Statistics}章では、次に重要な「\textcolor{red}{STATISTICS<X>}」テンプレートクラスについて詳しく見ていきます。\textcolor{blue}{その他のベースクラスは、\ref{sec:C_Class_Others}章にて解説します。}
 %------------------------------------------------------
-\subsection{概要}
+\subsection{ComplexField\_BASE クラス} \label{sec:C_Class_ComplexField}
+Single hadron correlator や NBS波動関数などは、時空間やスピンなどの index を持つ複素場として定義されており、HAL QCD法ではそれらの量を組み合わせることによりポテンシャルを計算しますが、この複素場を直感的に扱えるクラスとして「\textcolor{red}{ComplexField\_BASE}」というベースクラスを用意しています。この章では、このベースクラスの実装と実際の使い方を解説します。\\
+
+ComplexField\_BASE クラスのメンバ変数は次のようなもので、全て protected になっています。\\
+\begin{itembox}[l]{ComplexField\_BASE クラスのメンバ変数}
+	\begin{description}
+		\item[・std::complex<double> *m\_field] \mbox{} \\
+		複素数の場を格納する配列のポインタ
+		\item[・int m\_xSIZE] \mbox{} \\
+		空間（x方向）の大きさ
+		\item[・int m\_ySIZE] \mbox{} \\
+		空間（y方向）の大きさ
+		\item[・int m\_zSIZE] \mbox{} \\
+		空間（z方向）の大きさ
+		\item[・int m\_tSIZE] \mbox{} \\
+		時間（t方向）の大きさ
+		\item[・int m\_aSIZE] \mbox{} \\
+		時空間のindexの内側を回る自由度の大きさ
+		\item[・int m\_bSIZE] \mbox{} \\
+		時空間のindexの外側を回る自由度の大きさ
+	\end{description}
+\end{itembox} \\
+
+以下では、ComplexField\_BASE クラスのメンバ関数について解説していきます。
+
+%---------------------------
+\subsubsection{ComplexField\_BASE クラスのインスタンス化とオブジェクトの初期化}
+ComplexField\_BASE クラスのインスタンス化のために、次の４種類のコンストラクタを用意してあります。
+\begin{itemize}
+	\item[(1)] \verb#ComplexField_BASE psi#;
+	\item[(2)] \verb#ComplexField_BASE psi(psi_in)#;
+	\item[(3)] \verb#ComplexField_BASE psi(aSIZE, xSIZE, ySIZE, zSIZE, tSIZE, bSIZE)#;
+	\item[(4)] \verb#ComplexField_BASE psi(aSIZE, LSIZE, tSIZE, bSIZE)#;
+\end{itemize}
+(1) では、全ての自由度の大きさがゼロのオブジェクト {\verb#psi#} が作られます。(2) はコピーコンストラクタで、 引数で与えた {\verb#psi_in#} と同じサイズ、同じ値を持つオブジェクトが作られます。(3) では、引数にそれぞれ指定した自由度の大きさをもつオブジェクトが生成されます。このとき、メンバ変数 {\verb#m_field#} は指定した自由度の大きさ分（aSIZE $\times$ xSIZE $\times$ ySIZE $\times$ zSIZE $\times$ tSIZE $\times$ bSIZE）だけメモリが確保されます。(4) は (3) の wrapper で、
+%------------------------------------------------------
+\subsection{Statistics<X> テンプレートクラス} \label{sec:C_Class_Statistics}
+最終的なポテンシャルの結果は、異なるゲージ配位の下で計算された量の統計平均として定義されますが、この統計操作を直感的に扱えるクラスとして「\textcolor{red}{Statistics<X>}」というテンプレートクラスを用意しています。
 %------------------------------------------------------------------------------------------------------------
 %------------------------------------------------------------------------------------------------------------
 \section{python3コード}
@@ -72,8 +126,7 @@ Takaya Miyamoto \\
 \section{簡単な計算コード例と解析の手順}
 %------------------------------------------------------
 \subsection{テストデータについて}
-%---------------------------
-%\subsubsection{}
+
 %------------------------------------------------------------------------------------------------------------
 %------------------------------------------------------------------------------------------------------------
 %\begin{thebibliography}{99}

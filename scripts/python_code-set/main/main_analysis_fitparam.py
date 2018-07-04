@@ -4,13 +4,9 @@
 from __future__ import print_function
 
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../lib")
 import numpy as np
-
-from common.misc          import frange
-from common.statistics    import make_mean_err
-from fitting.io_params    import input_params
-from fitting.fitfunc_type import set_fitfunc_from_fname
+import time
 
 ### ================== Global Parameters Init. ================= ###
 ifname = None
@@ -18,25 +14,30 @@ r_min  = 0.001
 r_del  = 0.01
 r_max  = 2.5
 ### =========================== Main =========================== ###
+
 def main():
-    Fname, Params = input_params(ifname)
-    if (Fname is Params is None):
+    from common.misc          import frange
+    from common.statistics    import make_mean_err
+    from fitting.io_params    import input_params
+    from fitting.fitfunc_type import set_fitfunc_from_fname
+    
+    func_name, params = input_params(ifname)
+    if (func_name is params is None):
         return -1
     
-    Nconf   = len(Params[:,0])
-    Nparam  = len(Params[0,:])
-    FitFunc = set_fitfunc_from_fname(Fname)
+    Nconf    = len(params[:,0])
+    Nparam   = len(params[0,:])
+    fit_func = set_fitfunc_from_fname(func_name)
     
     for r in frange(r_min, r_max, r_del):
-        print("%lf %1.16e %1.16e" % 
-              (r, *make_mean_err(np.array([FitFunc(r,*Params[iconf,:])
-                                           for iconf in range(Nconf)]))))
+        print("%lf %1.16e %1.16e" %
+              (r, *make_mean_err(np.array([fit_func(r,*params[iconf,:]) for iconf in range(Nconf)]))))
     return 0
 
 ### ============================================================ ###
 ###### Functions for arguments
 def usage(ARGV0):
-    print("usage  : %s [ifile] {options}" % os.path.basename(ARGV0))
+    print("usage  : python %s [ifile] {options}\n" % os.path.basename(ARGV0))
     print("options:")
     print("      --r_min [Minimum range  (fm)] Default =", r_min)
     print("      --r_del [Range division (fm)] Default =", r_del)
@@ -70,20 +71,20 @@ def set_args(ARGC, ARGV):
             elif (ARGV[i] == '--r_max'):
                 r_max = float(ARGV[i+1])
             else:
-                print("\nERROR: Invalid option '%s'" % ARGV[i])
+                print("\nERROR: Invalid option '%s'\n" % ARGV[i])
                 usage(ARGV[0])
     
     check_args()
-
 ### ============================================================ ###
 ### ============================================================ ###
 if __name__ == "__main__":
     argv = sys.argv; argc = len(argv)
-
     if (argc == 1):
         usage(argv[0])
-
+    
     set_args(argc, argv)
-
+    
+    t_start = time.time()
     if (main() != 0):
         exit("ERROR EXIT.")
+    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))

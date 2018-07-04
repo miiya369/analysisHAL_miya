@@ -4,21 +4,14 @@
 from __future__ import print_function
 
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../lib")
 import numpy as np
-
-from scipy.optimize       import curve_fit
-
-from common.io_data_bin   import input_bin_data
-from common.statistics    import make_mean_err
-from fitting.fitfunc_type import set_fitfunc_from_fname, get_Nparam_from_fname
-from fitting.io_params    import input_init_params, output_params
-from fitting.print_gnuplt import print_gnuplt
+import time
 
 ### ================== Global Parameters Init. ================= ###
 ifname    = None
 ofname    = "/dev/null"
-fit_func  = "3G"
+func_name = "3G"
 min_range = 0.001
 max_range = 2.0
 Nrestart  = 1
@@ -29,16 +22,24 @@ Lower_bnd = np.empty(0)
 
 Max_iter  = 100000
 Nparam    = 0
-
-fparam_flg = False
 ### =========================== Main =========================== ###
+
 def main ():
     global iparams, Upper_bnd, Lower_bnd
+    
+    from scipy.optimize       import curve_fit
+    
+    from common.io_data_bin   import input_bin_data
+    from common.statistics    import make_mean_err
+    from fitting.io_params    import output_params
+    from fitting.fitfunc_type import set_fitfunc_from_fname
+    from fitting.print_gnuplt import print_gnuplt
+    
 ### Input data ###
     yData_tmp, xData_tmp, eData_tmp = input_bin_data(ifname)
     if (xData_tmp is yData_tmp is eData_tmp is None):
         return -1;
-        
+    
     Nconf      = len(yData_tmp[:,0])
     Ndata_tmp  = len(yData_tmp[0,:])
     Nparam     = len(iparams)
@@ -53,53 +54,58 @@ def main ():
             xData = np.append(xData, xData_tmp[  ir])
             eData = np.append(eData, eData_tmp[  ir])
             Ndata += 1
-    print("#"); print_gnuplt(fit_func, iparams); print("#")
+    print("#"); print_gnuplt(func_name, iparams); print("#")
     del yData_tmp
     del xData_tmp
     del eData_tmp
     
 ### Take fit ###
-    Ffunction = set_fitfunc_from_fname(fit_func)
-    LU_bounds = (Lower_bnd[:], Upper_bnd[:])
+    fit_func = set_fitfunc_from_fname(func_name)
+    if (np.all(Lower_bnd == -np.inf) and np.all(Upper_bnd == np.inf)):
+        LU_bounds = None
+    else:
+        LU_bounds = (Lower_bnd[:], Upper_bnd[:])
     
     for ires in range(Nrestart):
-        ResParams = np.array([curve_fit(Ffunction, xData, yData[iconf,:], 
-                                        sigma=eData, p0=iparams, bounds=LU_bounds #)[0]
-                                        , maxfev=Max_iter)[0]
-                                        #, max_nfev=Max_iter)[0]
-                              for iconf in range(Nconf)])
+        if (LU_bounds is None):
+            res_params = np.array([curve_fit(fit_func, xData, yData[iconf,:], 
+                                             sigma=eData, p0=iparams, maxfev=Max_iter)[0]
+                                   for iconf in range(Nconf)])
+        else:
+            res_params = np.array([curve_fit(fit_func, xData, yData[iconf,:], 
+                                             sigma=eData, p0=iparams, bounds=LU_bounds, max_nfev=Max_iter)[0]
+                                   for iconf in range(Nconf)])
         
-        Chisq_dof = np.array([np.sum(((Ffunction(xData, *ResParams[iconf,:]) - yData[iconf,:]) 
-                                      / eData)**2) / (Ndata - Nparam)
-                              for iconf in range(Nconf)])
+        chisq_dof = np.array([np.sum(((fit_func(xData, *res_params[iconf,:]) - yData[iconf,:]) / eData)**2) /
+                              (Ndata - Nparam) for iconf in range(Nconf)])
         
         print("# === Fitting Results (%03d) ===" % (ires+1))
-        print("# Chisq/dof = %lf +/- %lf" % (*make_mean_err(Chisq_dof),))
-        iparams = np.array([make_mean_err(ResParams[:,iparam])[0] for iparam in range(Nparam)])
+        print("# chisq/dof = %lf +/- %lf" % (*make_mean_err(chisq_dof),))
+        iparams = np.array([make_mean_err(res_params[:,iparam])[0] for iparam in range(Nparam)])
         print("# Parameters:", "%e "*len(iparams) % (*iparams,))
     
 ### Print Results ###
     print("#\n# === Fitting Results (Fin) ===")
-    mean, err = make_mean_err(Chisq_dof)
-    print("# Chisq/dof = %15lf +/- %15lf (%15.6f %%)" % (mean, err, abs(err/mean) * 100))
+    mean, err = make_mean_err(chisq_dof)
+    print("# chisq/dof = %15lf +/- %15lf (%15.6f %%)" % (mean, err, abs(err/mean) * 100))
     
-    tmpParams = np.array([make_mean_err(ResParams[:,iparam]) for iparam in range(Nparam)])
+    tmp_params = np.array([make_mean_err(res_params[:,iparam]) for iparam in range(Nparam)])
     for iparam in range(Nparam):
-        print("# param[%2d] = %15e +/- %15e (%15.6f %%)" % (iparam, tmpParams[iparam,0], tmpParams[iparam,1],
-                                                            abs(tmpParams[iparam,1] / tmpParams[iparam,0]) * 100))
+        print("# param[%2d] = %15e +/- %15e (%15.6f %%)" % (iparam, tmp_params[iparam,0], tmp_params[iparam,1],
+                                                            abs(tmp_params[iparam,1] / tmp_params[iparam,0]) * 100))
     
-    print("#"); print_gnuplt(fit_func, tmpParams[:,0]); print("#")
-    output_params(ofname, fit_func, ResParams)
+    print("#"); print_gnuplt(func_name, tmp_params[:,0]); print("#")
+    output_params(ofname, func_name, res_params)
     
     return 0
 
 ### ============================================================ ###
-###### Functions for arguments ######
+###### Functions for arguments
 def usage(ARGV0):
-    print("usage  : python %s [ifname (miyamoto-format binary file)] {options}" % os.path.basename(ARGV0))
+    print("usage  : python %s [ifile (miyamoto-format binary file)] {options}\n" % os.path.basename(ARGV0))
     print("options:")
     print("      --ofile    [Output (parameters) file name               ] Default =", ofname)
-    print("      --fit_func [Fit function name                           ] Default =", fit_func)
+    print("      --fit_func [Fit function name                           ] Default =", func_name)
     print("      --min_r    [Minimum range for fitting                   ] Default =", min_range)
     print("      --max_r    [Maximum range for fitting                   ] Default =", max_range)
     print("      --Nres     [#.restart of fitting                        ] Default =", Nrestart)
@@ -113,7 +119,7 @@ def check_args():
     print("# === Check Arguments ===")
     print("# ifile     =", ifname)
     print("# ofile     =", ofname)
-    print("# fit func  =", fit_func)
+    print("# fit func  =", func_name)
     print("# min range =", min_range)
     print("# max range =", max_range)
     print("# N.restart =", Nrestart)
@@ -124,7 +130,10 @@ def check_args():
     print("# =======================")
 
 def set_args(ARGC, ARGV):
-    global ifname, ofname, fit_func, min_range, max_range, Nrestart
+    from fitting.io_params    import input_init_params
+    from fitting.fitfunc_type import get_Nparam_from_fname
+    
+    global ifname, ofname, func_name, min_range, max_range, Nrestart
     global iparams, fparam, Upper_bnd, Lower_bnd, Nparam
     
     if (ARGV[1][0] == '-'):
@@ -139,7 +148,7 @@ def set_args(ARGC, ARGV):
             if   (ARGV[i] == '--ofile'):
                 ofname    = ARGV[i+1].strip()
             elif (ARGV[i] == '--fit_func'):
-                fit_func  = ARGV[i+1].strip()
+                func_name  = ARGV[i+1].strip()
             elif (ARGV[i] == '--min_r'):
                 min_range = float(ARGV[i+1])
             elif (ARGV[i] == '--max_r'):
@@ -173,15 +182,15 @@ def set_args(ARGC, ARGV):
                 print("\nERROR: Invalid option '%s'\n" % ARGV[i])
                 usage(ARGV[0])
     
-    if (get_Nparam_from_fname(fit_func) is None):
-        exit(-1)
+    if (get_Nparam_from_fname(func_name) is None):
+        exit(1)
     else:
-        Nparam = get_Nparam_from_fname(fit_func)
+        Nparam = get_Nparam_from_fname(func_name)
     
     if (fparam is not None):
         iparams, Lower_bnd, Upper_bnd = input_init_params(fparam)
         if (iparams is Upper_bnd is Lower_bnd is None):
-            exit(-1)
+            exit(1)
     else:
         if (len(iparams  ) == 0):
             for iparam in range(Nparam):
@@ -197,16 +206,16 @@ def set_args(ARGC, ARGV):
     
     if (len(iparams) != Nparam or len(Upper_bnd) != Nparam or len(Lower_bnd) != Nparam):
         exit("\n#.initial parameter is differ from the one of fit function, exit.\n")
-
 ### ============================================================ ###
 ### ============================================================ ###
 if (__name__ == "__main__"):
     argv = sys.argv; argc = len(argv)
-    
     if (argc == 1):
         usage(argv[0])
-    
+
     set_args(argc, argv)
-    
+
+    t_start = time.time()
     if (main() != 0):
         exit("ERROR EXIT.")
+    print("#\n# Elapsed time [s] = %d" % (time.time() - t_start))

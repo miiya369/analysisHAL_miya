@@ -9,7 +9,7 @@ namespace  { // Definitions of local variables (The initial parameters) & local 
    int max_time = 16;
    
    string ibase = "/home/miiya369/data/pacs-cs";
-   string obase = "/home/miiya369/data/pacs-cs/analysis_20180129";
+   string obase = "/home/miiya369/data/pacs-cs/analysis_20180515";
    
    string src_shift_str = "A64.000.000.000";
    
@@ -88,11 +88,11 @@ int main() {
    string och_name_str[2][2][3] =
    {
       {
-         {"LsN12", "SsN12", "SsN32"},
-         {"LcN12", "ScN12", "ScN32"}
+         {"LsN12_", "SsN12_", "SsN32_"},
+         {"LcN12_", "ScN12_", "ScN32_"}
       },{
-         {"LsLs0", "XssN0", "XssN1"},
-         {"LcLc0", "XccN0", "XccN1"}
+         {"LsLs0_", "XssN0_", "XssN1_"},
+         {"LcLc0_", "XccN0_", "XccN1_"}
       }
    };
    
@@ -105,6 +105,7 @@ int main() {
          in_out_NBSdata_2x2_spin(sc[isc], iens, bin_size[iens], itime, ich_name_str[0], Pmat_LxN , och_name_str[0][isc]);
          in_out_NBSdata_2x2_spin(sc[isc], iens, bin_size[iens], itime, ich_name_str[1], Pmat_LxLx, och_name_str[1][isc]);
       }
+      
    }
    time(&etime); printf("#\n# JOB END : ELAPSED TIME = %d [s]\n", (int)difftime(etime,stime));
    return 0;

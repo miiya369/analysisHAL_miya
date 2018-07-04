@@ -7,7 +7,7 @@ namespace  { // Definitions of local variables (The initial parameters) & local 
    int min_time = 7;
    int max_time = 15;
    
-   string fbase = "/home/miiya369/data/pacs-cs/analysis_20180129";
+   string fbase = "/home/miiya369/data/pacs-cs/analysis_20180515";
    
    string path_corr_bin(string sc, int ens, int bin_size, string hadron) {
       char tmp_c[256];
@@ -24,15 +24,15 @@ namespace  { // Definitions of local variables (The initial parameters) & local 
    string path_data_txt(string dhead, string sc, int ens, int bin_size, string ch_snk, string ch_src,
                         int spin, int time) {
       char tmp_c[256];
-      snprintf(tmp_c, sizeof(tmp_c), "%s_quark/ens%d/%s.%s_%s.spin_%d_.t%02d.bin_size%2d.gnu",
-               sc.c_str(), ens, dhead.c_str(), ch_snk.c_str(), ch_src.c_str(), spin, time, bin_size);
+      snprintf(tmp_c, sizeof(tmp_c), "%s_quark/ens%d/%s.%s_%s.eff.%dS%d.t%02d.bin_size%2d.gnu",
+               sc.c_str(), ens, dhead.c_str(), ch_snk.c_str(), ch_src.c_str(), 2*spin+1, spin, time, bin_size);
       return (fbase+"/"+tmp_c);
    }
    string path_data_fit(string dhead, string sc, int ens, int bin_size, string ch_snk, string ch_src,
                         int spin, int time) {
       char tmp_c[256];
-      snprintf(tmp_c, sizeof(tmp_c), "%s_quark/ens%d/%s.%s_%s.spin_%d_.t%02d.bin_size%2d.fit",
-               sc.c_str(), ens, dhead.c_str(), ch_snk.c_str(), ch_src.c_str(), spin, time, bin_size);
+      snprintf(tmp_c, sizeof(tmp_c), "%s_quark/ens%d/%s.%s_%s.eff.%dS%d.t%02d.bin_size%2d.fit",
+               sc.c_str(), ens, dhead.c_str(), ch_snk.c_str(), ch_src.c_str(), 2*spin+1, spin, time, bin_size);
       return (fbase+"/"+tmp_c);
    }
    
@@ -96,11 +96,11 @@ int main() {
    string ich_name_str[2][2][2] =
    {
       {
-         {"LsN12", "SsN12"},
-         {"LcN12", "ScN12"}
+         {"LsN12_", "SsN12_"},
+         {"LcN12_", "ScN12_"}
       },{
-         {"LsLs0", "XssN0"},
-         {"LcLc0", "XccN0"}
+         {"LsLs0_", "XssN0_"},
+         {"LcLc0_", "XccN0_"}
       }
    };
    
@@ -240,7 +240,7 @@ namespace  { // Inplementations of local functions for main part
       for (int ich=0; ich<2; ich++) for (int jch=0; jch<2; jch++) {
          pot[ich][jch].output_data_bin_reduce(path_data_fit(dir_name+"/pot/Pot", sc, ens, bin_size,
                                                             ich_name[ich], ich_name[jch],
-                                                            spin, time), lattice_spacing, true);
+                                                            spin, time), lattice_spacing, false);
       }
    }
 }
