@@ -30,11 +30,35 @@ ComplexField_XYZ sfunc::cfield_Ylm(const int L, const int M, const int Lsize) {
          }; break;
       case 2:
          switch (M) {
-            case -2: Ylm = Y_2_p2; break;
-            case -1: Ylm = Y_2_p1; break;
+            case -2: Ylm = Y_2_m2; break;
+            case -1: Ylm = Y_2_m1; break;
             case  0: Ylm = Y_2_0 ; break;
-            case +1: Ylm = Y_2_m1; break;
-            case +2: Ylm = Y_2_m2; break;
+            case +1: Ylm = Y_2_p1; break;
+            case +2: Ylm = Y_2_p2; break;
+            default: ERROR_COMMENTS("Unknown z-component of angular momentum.");
+         }; break;
+      case 3:
+         switch (M) {
+            case -3: Ylm = Y_3_m3; break;
+            case -2: Ylm = Y_3_m2; break;
+            case -1: Ylm = Y_3_m1; break;
+            case  0: Ylm = Y_3_0 ; break;
+            case +1: Ylm = Y_3_p1; break;
+            case +2: Ylm = Y_3_p2; break;
+            case +3: Ylm = Y_3_p3; break;
+            default: ERROR_COMMENTS("Unknown z-component of angular momentum.");
+         }; break;
+      case 4:
+         switch (M) {
+            case -4: Ylm = Y_4_m4; break;
+            case -3: Ylm = Y_4_m3; break;
+            case -2: Ylm = Y_4_m2; break;
+            case -1: Ylm = Y_4_m1; break;
+            case  0: Ylm = Y_4_0 ; break;
+            case +1: Ylm = Y_4_p1; break;
+            case +2: Ylm = Y_4_p2; break;
+            case +3: Ylm = Y_4_p3; break;
+            case +4: Ylm = Y_4_p4; break;
             default: ERROR_COMMENTS("Unknown z-component of angular momentum.");
          }; break;
       default:

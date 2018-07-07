@@ -122,14 +122,34 @@ namespace anaHAL {
 //! For special functions
 namespace sfunc {
    cdouble Y_0_0 (const int, const int, const int);
-   cdouble Y_1_p1(const int, const int, const int);
-   cdouble Y_1_0 (const int, const int, const int);
+   
    cdouble Y_1_m1(const int, const int, const int);
-   cdouble Y_2_p2(const int, const int, const int);
-   cdouble Y_2_p1(const int, const int, const int);
-   cdouble Y_2_0 (const int, const int, const int);
-   cdouble Y_2_m1(const int, const int, const int);
+   cdouble Y_1_0 (const int, const int, const int);
+   cdouble Y_1_p1(const int, const int, const int);
+   
    cdouble Y_2_m2(const int, const int, const int);
+   cdouble Y_2_m1(const int, const int, const int);
+   cdouble Y_2_0 (const int, const int, const int);
+   cdouble Y_2_p1(const int, const int, const int);
+   cdouble Y_2_p2(const int, const int, const int);
+   
+   cdouble Y_3_m3(const int, const int, const int);
+   cdouble Y_3_m2(const int, const int, const int);
+   cdouble Y_3_m1(const int, const int, const int);
+   cdouble Y_3_0 (const int, const int, const int);
+   cdouble Y_3_p1(const int, const int, const int);
+   cdouble Y_3_p2(const int, const int, const int);
+   cdouble Y_3_p3(const int, const int, const int);
+   
+   cdouble Y_4_m4(const int, const int, const int);
+   cdouble Y_4_m3(const int, const int, const int);
+   cdouble Y_4_m2(const int, const int, const int);
+   cdouble Y_4_m1(const int, const int, const int);
+   cdouble Y_4_0 (const int, const int, const int);
+   cdouble Y_4_p1(const int, const int, const int);
+   cdouble Y_4_p2(const int, const int, const int);
+   cdouble Y_4_p3(const int, const int, const int);
+   cdouble Y_4_p4(const int, const int, const int);
 }
 
 #endif
