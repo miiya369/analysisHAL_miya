@@ -226,6 +226,10 @@ public:
                const int, const int, const int) const;
    myclass lap() const;
    
+   cdouble lap2(const int, const int, const int,
+		const int, const int, const int) const;
+   myclass lap2() const;
+   
    myclass      rot_proj(const int) const;
    myclass src_spin_proj(const int, const int, const int) const;
    myclass snk_spin_proj(const int, const int, const int) const;

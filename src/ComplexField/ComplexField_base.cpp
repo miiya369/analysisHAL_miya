@@ -242,6 +242,50 @@ ComplexField_BASE ComplexField_BASE::lap() const {
    return ret;
 }
 
+cdouble ComplexField_BASE::lap2(const int a, const int x, const int y,
+				const int z, const int t, const int b) const {
+   int Xp1 = (x+1                    ) % (*this).get_xSIZE();
+   int Xm1 = (x-1+(*this).get_xSIZE()) % (*this).get_xSIZE();
+   int Yp1 = (y+1                    ) % (*this).get_ySIZE();
+   int Ym1 = (y-1+(*this).get_ySIZE()) % (*this).get_ySIZE();
+   int Zp1 = (z+1                    ) % (*this).get_zSIZE();
+   int Zm1 = (z-1+(*this).get_zSIZE()) % (*this).get_zSIZE();
+   int Xp2 = (x+2                    ) % (*this).get_xSIZE();
+   int Xm2 = (x-2+(*this).get_xSIZE()) % (*this).get_xSIZE();
+   int Yp2 = (y+2                    ) % (*this).get_ySIZE();
+   int Ym2 = (y-2+(*this).get_ySIZE()) % (*this).get_ySIZE();
+   int Zp2 = (z+2                    ) % (*this).get_zSIZE();
+   int Zm2 = (z-2+(*this).get_zSIZE()) % (*this).get_zSIZE();
+   return (((*this)(a, Xp1,y  ,z  , t, b) + (*this)(a, Xm1,y  ,z  , t, b) +
+            (*this)(a, x  ,Yp1,z  , t, b) + (*this)(a, x  ,Ym1,z  , t, b) +
+            (*this)(a, x  ,y  ,Zp1, t, b) + (*this)(a, x  ,y  ,Zm1, t, b)) * 16.0
+           -
+           ((*this)(a, Xp2,y  ,z  , t, b) + (*this)(a, Xm2,y  ,z  , t, b) +
+            (*this)(a, x  ,Yp2,z  , t, b) + (*this)(a, x  ,Ym2,z  , t, b) +
+            (*this)(a, x  ,y  ,Zp2, t, b) + (*this)(a, x  ,y  ,Zm2, t, b))
+           -
+           (*this)(a, x ,y ,z , t, b) * 90.0) / 12.0;
+}
+
+ComplexField_BASE ComplexField_BASE::lap2() const {
+   DEBUG_LOG
+   int l_aSIZE = (*this).get_aSIZE();
+   int l_xSIZE = (*this).get_xSIZE();
+   int l_ySIZE = (*this).get_ySIZE();
+   int l_zSIZE = (*this).get_zSIZE();
+   int l_tSIZE = (*this).get_tSIZE();
+   int l_bSIZE = (*this).get_bSIZE();
+   ComplexField_BASE ret(l_aSIZE, l_xSIZE, l_ySIZE, l_zSIZE, l_tSIZE, l_bSIZE);
+   for (               int b=0; b<l_bSIZE; b++)
+      for (            int t=0; t<l_tSIZE; t++)
+         for (         int z=0; z<l_zSIZE; z++)
+            for (      int y=0; y<l_ySIZE; y++)
+               for (   int x=0; x<l_xSIZE; x++)
+                  for (int a=0; a<l_aSIZE; a++)
+                     ret(a,x,y,z,t,b) = (*this).lap2(a,x,y,z,t,b);
+   return ret;
+}
+
 ComplexField_BASE ComplexField_BASE::rot_proj(int rep_type) const {
    DEBUG_LOG
    int l_aSIZE = (*this).get_aSIZE();

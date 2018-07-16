@@ -13,7 +13,7 @@ def rot_proj(a_Data, a_state = "A1"):
     - a_Data[#.site, #.site, #.site] (3-dim ndarray)
     - a_state (= 'A1', 'A2', 'E', 'T1', 'T2')
     
-    return: r_Data[#.site, #.site, #.site] (3-dim ndarray)
+    return: r_Data[#.site, #.site, #.site] (3-dim ndarray, dtype=complex)
     
     Note: #.site is got from a_Data
     """
@@ -35,16 +35,17 @@ def rot_proj(a_Data, a_state = "A1"):
         print("\nERROR: Invalid representation type (%s)\n" % a_state)
         return None
     
-    r_Data = zeros((l_L, l_L, l_L))
+    r_Data = zeros(l_L*l_L*l_L, dtype=complex)
+    xyzw   = array([[[[x,y,z,1] for x in range(l_L)] for y in range(l_L)] 
+                    for z in range(l_L)]).reshape(l_L**3,4)
     
     for i in range(24):
         Rmat = rot_mat(l_L    , *irep(i)   )
         Rchr = rot_chr(a_state,  irep(i)[0])
-        for z in range(l_L):
-            for y in range(l_L):
-                for x in range(l_L):
-                    xyz_in = array([x,y,z,1])
-                    xyz = dot(Rmat, xyz_in) % l_L
-                    r_Data[xyz[2],xyz[1],xyz[0]] += Rchr * a_Data[z,y,x]
+        if (Rchr == 0):
+            continue        
+        new_xyzw = dot(Rmat, xyzw.T).T % l_L
+        new_idx  = new_xyzw[:,0] + l_L*(new_xyzw[:,1] + l_L*new_xyzw[:,2])
+        r_Data[new_idx] += Rchr * a_Data.flatten()
     
-    return r_Data * factor
+    return r_Data.reshape((l_L,l_L,l_L)) * factor

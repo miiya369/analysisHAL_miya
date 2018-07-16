@@ -56,7 +56,7 @@ namespace anaHAL {
          tmp_idx = (tmp_idx-idx[i]) / iSIZE[i];
       } if (tmp_idx != 0) ERROR_COMMENTS("index convert failed.");
    }
-   //! Convert index = 0,1,...,L to -L/2+1,...,L/2 for each element
+   //! Convert index = 0,1,...,L-1 to -L/2+1,...,L/2 for each element
    inline void convert_origin(const int *iorg, int *isft,
                               const int *iSIZE, const int Nidx) {
       for (int i=0; i<Nidx; i++)

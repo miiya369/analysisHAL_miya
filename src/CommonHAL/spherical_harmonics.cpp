@@ -210,7 +210,7 @@ cdouble sfunc::Y_4_m1(const int x, const int y, const int z) {
 cdouble sfunc::Y_4_0(const int x, const int y, const int z) {
    
    int x2y2 = x*x + y*y;
-   return sqrt(9.0/(256.0*PI)) * (3.0*x2y2*x2y2-24.0*x2y2*z+8.0*z*z*z*z)/pow(double(x*x+y*y+z*z),2);
+   return sqrt(9.0/(256.0*PI)) * (3.0*x2y2*x2y2-24.0*x2y2*z*z+8.0*z*z*z*z)/pow(double(x*x+y*y+z*z),2);
 }
 //--------------------------------------------------------------------------
 /**
