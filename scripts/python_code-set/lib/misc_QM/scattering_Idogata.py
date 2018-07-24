@@ -16,8 +16,7 @@ def tan_d_Idogata3D(a_k, a_V0, a_R0, a_Mu, a_l):
     return: tan[delta_l(k)]
     
     Note: a_k, a_V0, a_R0 and a_Mu shold be in the unit of [MeV], [MeV], [fm] and [MeV].
-    """
-    
+    """    
     if (a_k == 0):
         a_k = 10e-10
     
@@ -40,7 +39,6 @@ def Eb_Idogata3D_Swave(a_V0, a_R0, a_Mu):
     
     Note: a_k, a_V0, a_R0 and a_Mu shold be in the unit of [MeV], [MeV], [fm] and [MeV].
     """
-    
     if (a_V0 > 0):
         return array([0.0])
     
@@ -60,7 +58,8 @@ def Eb_Idogata3D_Swave(a_V0, a_R0, a_Mu):
         if (plus_flg):
             if (l_f(x) < 0):
                 plus_flg = False
-                Ret = append(Ret, ((brentq(l_f, x, x-div_x) * hbar_c / a_R0)**2 + 2.0*a_Mu*a_V0) / (2.0*a_Mu))
+                Ret = append(Ret, ((brentq(l_f, x, x-div_x) * hbar_c / a_R0)**2 + 
+                                   2.0*a_Mu*a_V0) / (2.0*a_Mu))
         else:
             if (l_f(x) > 0):
                 plus_flg = True

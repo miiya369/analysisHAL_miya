@@ -11,8 +11,7 @@ def sum_0_inf(a_f, precision = 10e-9):
     Sub function to calculate sum_{x=0}^inf f(x)
     
     return: sum_{x=0}^inf f(x)
-    """
-    
+    """    
     l_MaxIter   = 1000000
     l_IterBlock = 100
     
@@ -38,7 +37,6 @@ def sum_1_Z3_old(a_f, precision = 10e-9):
     
     return: sum_{n in Z^3 (without n=0)} f(|n|^2)
     """
-    
     l_Max_n = 10000
     
     ret         = 0.0
@@ -67,7 +65,6 @@ def sum_1_Z3(a_f, precision = 10e-9):
     
     return: sum_{n in Z^3 (without n=0)} f(|n|^2)
     """
-    
     l_Max_n = 10000
     
     ret         = 0.0
@@ -89,7 +86,6 @@ def num_point_r2(a_r2):
     """
     Return the number of r^2 which satisfies x^2 + y^2 + z^2 = r^2, where x, y, z are in Z.
     """
-    
     ret = 0
     for x in range(-a_r2, a_r2+1):
         for y in range(-a_r2, a_r2+1):
@@ -103,7 +99,6 @@ def num_point_r2_rev(a_r2):
     Return the number of r^2 which satisfies x^2 + y^2 + z^2 = r^2, where x, y, z are in Z.
     ~~~ Modified version ~~~
     """
-    
     ret = 0
     if (a_r2 == 0):
         return 1
@@ -141,7 +136,6 @@ def num_point_r2_rev2(a_r2):
     Return the number of r^2 which satisfies x^2 + y^2 + z^2 = r^2, where x, y, z are in Z.
     ~~~ Modified version2 ~~~
     """
-    
     if (a_r2 == 0):
         return 1
     
@@ -184,7 +178,6 @@ def zeta_1_yamazaki(a_q_sqr, precision = 10e-9):
     
     return: 'sum_{n in Z^3} (n^2 - a_q_sqr)^{-1}'
     """
-    
     term1 = sum_1_Z3 (lambda a_n2: exp(-(a_n2-a_q_sqr)) / (a_n2-a_q_sqr), precision)
     term2 = quad     (lambda a_t: exp(a_t*a_q_sqr) * (pi/a_t)**1.5 * 
                       sum_1_Z3(lambda a_n2: exp(-pi**2 * a_n2 / a_t), precision), 0, 1)[0]
@@ -198,7 +191,6 @@ def zeta_1(a_q_sqr, precision = 10e-9):
     
     return: 'sum_{n in Z^3} (n^2 - a_q_sqr)^{-1}'
     """
-    
     return sum_1_Z3(lambda a_n2: 1.0/(a_n2 - a_q_sqr), precision) - 1.0/a_q_sqr
 
 def k_cot_d_Luscher(a_k_sqr, a_L, precision = 10e-9):
@@ -209,7 +201,6 @@ def k_cot_d_Luscher(a_k_sqr, a_L, precision = 10e-9):
     
     Note: a_k_sqr and a_L should be in Lattice Unit.
     """
-    
     if (a_k_sqr == 0.0):
         return 0.0
     

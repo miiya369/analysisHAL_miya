@@ -1,6 +1,6 @@
 #!/bin/bash
 
-delete_d=("__pycache__")
+delete_d=("__pycache__" ".ipynb_checkpoints")
 delete_f=(".DS_Store" "*~" ".*~" "._*" "*.pyc")
 
 for d in ${delete_d[@]}; do
