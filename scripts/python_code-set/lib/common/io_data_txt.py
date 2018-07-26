@@ -11,8 +11,7 @@ def input_text_data(a_ifname, verbose_flg = True):
     return: Data[#.row, #.column]
     
     Note: The text data is assumed to construct as (#.row) x (#.column) float data.
-    """
-    
+    """    
     r_Data = loadtxt(a_ifname)
     
     if (verbose_flg):
@@ -31,7 +30,6 @@ def output_text_data(a_ofname, a_Data, verbose_flg = True):
     
     Note: #.row and #.column are got from a_Data.
     """
-    
     savetxt(a_ofname, a_Data, fmt='%1.16e '*(len(a_Data[0,:])))
     
     if (verbose_flg):

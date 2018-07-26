@@ -11,19 +11,19 @@ def make_mean_err(a_data, is_JKdata = True):
     For arguments,
     - a_data[#.data] (1-dim ndarray)
     
-    return: (mean, error)
+    return: ret[2, #.data]
+    ( ret[0] = mean, ret[1] = error )
     
     Note: #.data is got from a_data.
-    """
-    
+    """    
     if (is_JKdata):
         factor =       sqrt(len(a_data) - 1)
     else:
         factor = 1.0 / sqrt(len(a_data) - 1)
     
-    return (mean(a_data), std(a_data) * factor)
+    return array(mean(a_data), std(a_data) * factor)
 
-def make_JKsample(a_data, a_bsize):
+def make_JKsample(a_data, a_bsize = 1):
     """
     The function to construct the Jack-Knife samples.
     
@@ -35,12 +35,13 @@ def make_JKsample(a_data, a_bsize):
     Note1: #.conf and #.data are got from a_data.
     Note2: #.conf % bin_size == 0 is necessary.
     """
-    
     l_Nconf = len(a_data[:,0])
     if (l_Nconf % a_bsize != 0):
-        print("\nERROR: Unexpected #.conf; #.conf(=%d) %% bin-size(=%d) != 0, exit.\n" %
-              (l_Nconf, a_bsize)); return None
+        print("\nERROR: Unexpected #.conf " +
+              "(#.conf(=%d) %% bin-size(=%d) != 0).\n" % (l_Nconf, a_bsize))
+        return None
     
     l_Nbin = l_Nconf // a_bsize
-    return array([(sum(a_data, axis=0)-sum(a_data[i*a_bsize:(i+1)*a_bsize, :], axis=0))
+    l_sum  = sum(a_data, axis=0)
+    return array([(l_sum-sum(a_data[i*a_bsize:(i+1)*a_bsize,:], axis=0))
                   for i in range(l_Nbin)]) / float(l_Nconf-a_bsize)

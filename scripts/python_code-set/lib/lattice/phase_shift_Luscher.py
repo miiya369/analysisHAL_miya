@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """The module to calculate phase shifts by Luscher's finite volume formula."""
+""" !!!WARNING!!! The functions in this file are preliminary (Not Checked)."""
 
 from math            import factorial, ceil
 from numpy           import pi, exp, sqrt
