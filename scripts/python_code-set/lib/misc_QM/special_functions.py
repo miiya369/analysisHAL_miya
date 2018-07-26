@@ -86,7 +86,7 @@ def sph_harm_A1_xyz(a_l, a_m, a_x, a_y, a_z):
     A1 projected spherical harmonics (a_l < 9)
     """
     if   (a_l == 0):
-        return 1.0 / (2.0*sqrt(pi))
+        return (a_x/a_x) * (a_y/a_y) * (a_z/a_z) / (2.0*sqrt(pi))
     
     elif (a_l == 1):
         return a_x * a_y * a_z * 0.0
