@@ -213,20 +213,20 @@ def rbin_L04_separation(a_data, a_bsize = 1.0, a_crit = 0.1, up_to_L6 = False):
     opsi6 = []; odpsi6 = []; od2psi6 = []
     if (up_to_L6):
         Np_min = 9
-        Matfnc = lambda dr,x,y,z,iNp: array([[l_Y00, l_Y00 * dr[i], l_Y00 * dr[i]**2,
+        Matfnc = lambda dr,x,y,z,iNp: array([[l_Y00, l_Y00 * dr[i], l_Y00 * dr[i]**2/2.0,
                                               sph_harm_A1_xyz(4,0,x[i],y[i],z[i]),
                                               sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i],
-                                              sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i]**2,
+                                              sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i]**2/2.0,
                                               sph_harm_A1_xyz(6,0,x[i],y[i],z[i]),
                                               sph_harm_A1_xyz(6,0,x[i],y[i],z[i]) * dr[i],
-                                              sph_harm_A1_xyz(6,0,x[i],y[i],z[i]) * dr[i]**2]
+                                              sph_harm_A1_xyz(6,0,x[i],y[i],z[i]) * dr[i]**2/2.0]
                                              for i in range(iNp)])
     else:
         Np_min = 6
-        Matfnc = lambda dr,x,y,z,iNp: array([[l_Y00, l_Y00 * dr[i], l_Y00 * dr[i]**2,
+        Matfnc = lambda dr,x,y,z,iNp: array([[l_Y00, l_Y00 * dr[i], l_Y00 * dr[i]**2/2.0,
                                               sph_harm_A1_xyz(4,0,x[i],y[i],z[i]),
                                               sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i],
-                                              sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i]**2]
+                                              sph_harm_A1_xyz(4,0,x[i],y[i],z[i]) * dr[i]**2/2.0]
                                              for i in range(iNp)])
     
     for r in arange(0.0, max(l_rdata[0]), a_bsize):
