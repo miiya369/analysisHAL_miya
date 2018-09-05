@@ -77,8 +77,8 @@ def sph_harm_xyz(a_l, a_m, a_x, a_y, a_z):
     ....: that is, theta as the polar angle and phi as the azimuthal angle.
     """
     l_r     = sqrt(a_x**2 + a_y**2 + a_z**2)
-    l_theta = arctan2(a_y , a_x) + pi
-    l_phi   = arccos (a_z / l_r)
+    l_theta = (arctan2(a_y , a_x) + 4*pi) % (2*pi)
+    l_phi   =  arccos (a_z / l_r)
     return sph_harm(a_m, a_l, l_theta, l_phi)
 
 def sph_harm_A1_xyz(a_l, a_m, a_x, a_y, a_z):

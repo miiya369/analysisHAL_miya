@@ -27,7 +27,7 @@ def main():
     Nch   = len(Tmat[0,0,:,0])
     
 ### Convert T-matrix to S-matrix ###
-    Smat = np.array([[convert_TtoS(Tmat[iconf,idata,:,:]) for iE in range(Ndata)] for iconf in range(Nconf)])
+    Smat = np.array([[convert_TtoS(Tmat[iconf,idata,:,:]) for idata in range(Ndata)] for iconf in range(Nconf)])
     
     if (False): # For Debug (Unitarity check for S-matrix)
         for iconf in range(Nconf):

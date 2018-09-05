@@ -5,7 +5,7 @@
 MagicNum_BinData_Miya = 19900518
 MagicNum_BinData_NXYZ = 94421393
 
-from numpy  import fromfile, array
+from numpy  import fromfile, array, std, sqrt
 from struct import pack
 
 def input_bin_data(a_ifname, calc_err = True, verbose_flg = True):

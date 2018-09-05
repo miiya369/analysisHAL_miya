@@ -21,7 +21,7 @@ def make_mean_err(a_data, is_JKdata = True):
     else:
         factor = 1.0 / sqrt(len(a_data) - 1)
     
-    return array(mean(a_data), std(a_data) * factor)
+    return array([mean(a_data), std(a_data) * factor])
 
 def make_JKsample(a_data, a_bsize = 1):
     """
