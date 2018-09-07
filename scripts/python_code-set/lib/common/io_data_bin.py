@@ -92,6 +92,85 @@ def output_bin_data(a_ofname, a_yData, a_xData, verbose_flg = True):
     if (verbose_flg):
         print("# Successful to output bin data.")
 
+def input_bin_data_naxyzb(a_ifname, data_type = "complex", verbose_flg = True):
+    """
+    The function to input the (axyzb-complex field w/all-conf) binary data.
+    
+    return: Data[#.conf, #.Bsize, #.Zsite, #.Ysite, #.Xsite, #.Asize] (6-dim complex/float ndarray)
+    """
+    with open(a_ifname, 'rb') as ifile:
+        l_MagicNum = fromfile(ifile, '<i4', 1)[0]
+        
+        if (l_MagicNum != MagicNum_BinData_NXYZ):
+            print("\nERROR: Invalid magic number '%d', exit.\n" % l_MagicNum)
+            return None
+        
+        l_Asize = fromfile(ifile, '<i4', 1)[0]
+        l_Xsize = fromfile(ifile, '<i4', 1)[0]
+        l_Ysize = fromfile(ifile, '<i4', 1)[0]
+        l_Zsize = fromfile(ifile, '<i4', 1)[0]
+        l_Tsize = fromfile(ifile, '<i4', 1)[0]
+        l_Bsize = fromfile(ifile, '<i4', 1)[0]
+        l_Nconf = fromfile(ifile, '<i4', 1)[0]
+        
+        if (l_Tsize != 1):
+            print("\nERROR: Input for Tsize = %d is not allowed.\n" % l_Tsize)
+            return None
+        
+        if   (data_type ==  "double"):
+            r_Data = (fromfile(ifile, '<c16', l_Nconf*l_Bsize*l_Zsize*l_Ysize*l_Xsize*l_Asize).real
+                      .reshape((l_Nconf, l_Bsize, l_Zsize, l_Ysize, l_Xsize, l_Asize)))
+        elif (data_type == "complex"):
+            r_Data = (fromfile(ifile, '<c16', l_Nconf*l_Bsize*l_Zsize*l_Ysize*l_Xsize*l_Asize)
+                      .reshape((l_Nconf, l_Bsize, l_Zsize, l_Ysize, l_Xsize, l_Asize)))
+        else:
+            print("\nERROR: Only the data types 'complex' or 'double' can be specified.\n" +
+                  "Input the (axyzb-complex field w/all-conf) binary data was failed.\n")
+            return None
+        
+    if (verbose_flg):
+        print("# Successful to input Binary data")
+        print("# A-size = %d" % l_Asize)
+        print("# X-size = %d" % l_Xsize)
+        print("# Y-size = %d" % l_Ysize)
+        print("# Z-size = %d" % l_Zsize)
+        print("# B-size = %d" % l_Bsize)
+        print("# N.conf = %d" % l_Nconf)
+    
+    return r_Data
+
+def output_bin_data_naxyzb(a_ofname, a_data, verbose_flg = True):
+    """
+    The function to output the (axyzb-complex field w/all-conf) binary data.
+    
+    For arguments,
+    - a_data[#.conf, #.Bsize, #.Zsite, #.Ysite, #.Xsite, #.Asize] (6-dim complex/float ndarray)
+    
+    Note: #.conf, #.Bsize, #.Zsite, #.Ysite, #.Xsite and #.Asize are got from a_data
+    """    
+    l_Nconf = len(a_data[:,0,0,0,0,0])
+    l_Bsize = len(a_data[0,:,0,0,0,0])
+    l_Zsize = len(a_data[0,0,:,0,0,0])
+    l_Ysize = len(a_data[0,0,0,:,0,0])
+    l_Xsize = len(a_data[0,0,0,0,:,0])
+    l_Asize = len(a_data[0,0,0,0,0,:])
+    
+    with open(a_ofname, 'wb') as ofile:
+        ofile.write(pack('<i', MagicNum_BinData_NXYZ))
+        ofile.write(pack('<i', l_Asize))
+        ofile.write(pack('<i', l_Xsize))
+        ofile.write(pack('<i', l_Ysize))
+        ofile.write(pack('<i', l_Zsize))
+        ofile.write(pack('<i', 1))
+        ofile.write(pack('<i', l_Bsize))
+        ofile.write(pack('<i', l_Nconf))
+        
+        ofile.write(pack('<%dd' % l_Nconf*l_Bsize*l_Zsize*l_Ysize*l_Xsize*l_Asize * 2,
+                         *array((a_data.flatten().real, 
+                                 a_data.flatten().imag)).T.flatten()))
+    if (verbose_flg):
+        print("# Successful to output bin data.")
+
 def input_bin_data_nxyz(a_ifname, data_type = "complex", verbose_flg = True):
     """
     The function to input the (xyz-complex field w/all-conf) binary data.
