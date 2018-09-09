@@ -60,38 +60,24 @@ def xyzdata_to_rdata(a_data, A1_reduction = True):
     Note1: #.Lsite is got from a_data.
     Note2: When A1_reduction = True, assuming #.Zsite == #.Ysite == #.Xsite.
     """
-    o_r = []
-    o_d = []
-    o_x = []
-    o_y = []
-    o_z = []
     if (A1_reduction):
         if (len(a_data[:,0,0]) != len(a_data[0,:,0]) or
             len(a_data[:,0,0]) != len(a_data[0,0,:])):
             print("\nERROR: #.site (Nx,Ny,Nz) must be the same for A1-reduction.\n")
             return None
         l_L = len(a_data[:,0,0])
-        for z in range(l_L//2+1):
-            for y in range(z+1):
-                for x in range(y+1):
-                    o_x.append(x)
-                    o_y.append(y)
-                    o_z.append(z)
-                    o_r.append(sqrt(x**2+y**2+z**2))
-                    o_d.append(a_data[z,y,x])
+        return array([[sqrt(x**2+y**2+z**2), a_data[z,y,x], z, y, x]
+                      for z in range(l_L//2+1)
+                      for y in range(z+1)
+                      for x in range(y+1)]).T
     else:
         l_Lz2 = len(a_data[:,0,0]) // 2
         l_Ly2 = len(a_data[0,:,0]) // 2
         l_Lx2 = len(a_data[0,0,:]) // 2
-        for z in range(-l_Lz2, l_Lz2):
-            for y in range(-l_Ly2, l_Ly2):
-                for x in range(-l_Lx2, l_Lx2):
-                    o_x.append(x)
-                    o_y.append(y)
-                    o_z.append(z)
-                    o_r.append(sqrt(x**2+y**2+z**2))
-                    o_d.append(a_data[z,y,x])
-    return array((o_r, o_d, o_z, o_y, o_x))
+        return array([[sqrt(x**2+y**2+z**2), a_data[z,y,x], z, y, x]
+                      for z in range(-l_Lz2, l_Lz2) 
+                      for y in range(-l_Ly2, l_Ly2) 
+                      for x in range(-l_Lx2, l_Lx2)]).T
 
 def make_rbin(a_data, a_bsize = 1.0):
     """
