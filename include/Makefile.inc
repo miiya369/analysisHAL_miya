@@ -1,7 +1,7 @@
 
 ### You can change here for your environment ###
 
-CXX = g++
+CXX = g++-5
 AR  = ar
 
 OPTION_CXXFLAGS    = -fopenmp #-DDEBUG_MODE
