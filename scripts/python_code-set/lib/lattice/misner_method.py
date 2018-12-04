@@ -201,7 +201,7 @@ class Sph_harm_deco_misner:
         .     this data shold be a_rzyx_coords[0, i], the z-coordinate of this data 
         .     shold be a_rzyx_coords[0, i], and so on.
         
-        return: amplitude for l,m [#.output-data] (1-dim ndarray, dtype=complex).
+        return: amplitude for Y_{l,m} [#.output-data] (1-dim ndarray, dtype=complex).
         """
         if (self.oRlm_all is None):
             print("\nERROR: The orthogonal basis have not been calculated.\n")

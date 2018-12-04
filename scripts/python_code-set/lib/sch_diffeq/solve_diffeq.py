@@ -82,6 +82,28 @@ def func_sch_ode_NLO(a_phi, a_r, a_V_LO, a_prm_LO, a_V_NLO, a_prm_NLO, a_E, a_mu
     
     return array([*a_phi[l_Nch:], *dot(l_Amat, a_phi[:l_Nch])])
 
+def solve_sch_diff_single(a_iphi, a_V, a_prm, a_m, a_E, a_l, a_rini, a_rmax):
+    """
+    The function to solve the single channel Schrodinger equation by solving the differential equation,
+    and return the T-matrix.
+    
+    For arguments,
+    - a_iphi[2]       (1-dim ndarray) <-- [iphi, d/dr iphi]
+    - a_V             (a function object)
+    - a_prm [#.param] (1-dim ndarray)
+    - a_m   [2]       (1-dim ndarray) <-- [1st had, 2nd had]
+    - a_E   [#.data]  (1-dim ndarray) <-- ndarray of energy to calculate
+    - a_l             (integer scalar)
+    - a_rini, a_rmax  (double  scalar)
+    
+    return: T-matrix[#.data] (1-dim ndarray, dtype=complex)
+    
+    Note1: #.data is got from len(a_E)
+    Note2: The units of Potentials, E and m must to be [MeV]
+    """
+    return solve_sch_diff(array([a_iphi]), array([[a_V]]), array([[a_prm]]), 
+                          array([a_m]), a_E, array([a_l]), a_rini, a_rmax)[:,0,0]
+
 def solve_sch_diff(a_iphi, a_V, a_prm, a_m, a_E, a_l, a_rini, a_rmax):
     """
     The function to solve the NxN Schrodinger equation by solving the differential equation,
@@ -94,7 +116,7 @@ def solve_sch_diff(a_iphi, a_V, a_prm, a_m, a_E, a_l, a_rini, a_rmax):
     - a_m   [#.ch, 2]             (2-dim ndarray) <-- [[1st had, 2nd had], ...]
     - a_E   [#.data]              (1-dim ndarray) <-- ndarray of energy to calculate
     - a_l   [#.ch]                (1-dim ndarray) <-- [l1, l2, ...] (integer)
-    - a_rini, a_rmax              (double scala)
+    - a_rini, a_rmax              (double scalar)
     
     return: T-matrix[#.data, #.ch, #.ch] (3-dim ndarray, dtype=complex)
     

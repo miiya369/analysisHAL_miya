@@ -79,14 +79,14 @@ def output_bin_data(a_ofname, a_yData, a_xData, verbose_flg = True):
         ofile.write(pack('<i', l_NByte))
         
         if   (l_NByte == 4):
-            ofile.write(pack('<%di' %         l_Ndata  , *a_xData))
-            ofile.write(pack('<%di' % l_Nconf*l_Ndata  , *a_yData.flatten()))
+            ofile.write(pack('<%di' %          l_Ndata   , *a_xData))
+            ofile.write(pack('<%di' % (l_Nconf*l_Ndata  ), *a_yData.flatten()))
         elif (l_NByte == 8):
-            ofile.write(pack('<%dd' %         l_Ndata  , *a_xData))
-            ofile.write(pack('<%dd' % l_Nconf*l_Ndata  , *a_yData.flatten()))
+            ofile.write(pack('<%dd' %          l_Ndata   , *a_xData))
+            ofile.write(pack('<%dd' % (l_Nconf*l_Ndata  ), *a_yData.flatten()))
         elif (l_NByte == 16):
-            ofile.write(pack('<%dd' %         l_Ndata  , *a_xData))
-            ofile.write(pack('<%dd' % l_Nconf*l_Ndata*2,
+            ofile.write(pack('<%dd' %          l_Ndata   , *a_xData))
+            ofile.write(pack('<%dd' % (l_Nconf*l_Ndata*2),
                              *array((a_yData.flatten().real,
                                      a_yData.flatten().imag)).T.flatten()))
     if (verbose_flg):
@@ -165,7 +165,7 @@ def output_bin_data_naxyzb(a_ofname, a_data, verbose_flg = True):
         ofile.write(pack('<i', l_Bsize))
         ofile.write(pack('<i', l_Nconf))
         
-        ofile.write(pack('<%dd' % l_Nconf*l_Bsize*l_Zsize*l_Ysize*l_Xsize*l_Asize * 2,
+        ofile.write(pack('<%dd' % (l_Nconf*l_Bsize*l_Zsize*l_Ysize*l_Xsize*l_Asize * 2),
                          *array((a_data.flatten().real, 
                                  a_data.flatten().imag)).T.flatten()))
     if (verbose_flg):
@@ -241,7 +241,7 @@ def output_bin_data_nxyz(a_ofname, a_data, verbose_flg = True):
         ofile.write(pack('<i', 1))
         ofile.write(pack('<i', l_Nconf))
         
-        ofile.write(pack('<%dd' % l_Nconf*l_Zsize*l_Ysize*l_Xsize * 2,
+        ofile.write(pack('<%dd' % (l_Nconf*l_Zsize*l_Ysize*l_Xsize * 2),
                          *array((a_data.flatten().real, 
                                  a_data.flatten().imag)).T.flatten()))
     if (verbose_flg):
@@ -314,7 +314,7 @@ def output_bin_data_nt(a_ofname, a_data, verbose_flg = True):
         ofile.write(pack('<i', 1))
         ofile.write(pack('<i', l_Nconf))
         
-        ofile.write(pack('<%dd' % l_Nconf*l_Tsize * 2,
+        ofile.write(pack('<%dd' % (l_Nconf*l_Tsize * 2),
                          *array((a_data.flatten().real, 
                                  a_data.flatten().imag)).T.flatten()))
     if (verbose_flg):
