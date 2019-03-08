@@ -172,6 +172,16 @@ def fitfunc_2G2Y(a_x, a_p1, a_p2, a_p3, a_p4, a_p5, a_p6, a_p7, a_p8, a_p9, a_p1
     else:
         return (a_p1 * exp(-pow(a_x/a_p2, 2)) + a_p3 * exp(-pow(a_x/a_p4, 2)))
 
+def fitfunc_1G1Ysq(a_x, a_p1, a_p2, a_p3, a_p4, a_p5):
+    """1-ranges Gaussian + one Yukawa square"""
+    
+#    if (a_x != 0.0):
+    if (True):
+        return (a_p1 * exp(-pow(a_x/a_p2, 2)) + 
+                a_p3 * (1.0 - exp(-a_p4 * a_x**2))**2 * exp(-2.0 * a_p5 * a_x) / a_x**2)
+    else:
+        return (a_p1 * exp(-pow(a_x/a_p2, 2)))
+
 def fitfunc_2G1Ysq(a_x, a_p1, a_p2, a_p3, a_p4, a_p5, a_p6, a_p7):
     """2-ranges Gaussian + one Yukawa square"""
     

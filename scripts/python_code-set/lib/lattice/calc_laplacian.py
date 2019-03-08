@@ -21,7 +21,7 @@ def lap(a_data):
             r_data += roll(a_data, pm1, axis=ia)
     return r_data
 
-def lap_4th_proc(a_data):
+def lap_4th_prec(a_data):
     """
     The function to calculate the laplacian for a 3D-field on a lattice.
     ~~~ with 4th-order precision for 2nd-derivative ~~~

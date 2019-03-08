@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-The module for the Misner's method.
+The module for the Misner's method for A1 projected waves.
 Ref: 'Spherical harmonic decomposition on a cubic grid', 
 ...  Charles W Misner, Classical and Quantum Gravity 21 (2004) S243-S247.
 """
@@ -13,8 +13,8 @@ from multiprocessing            import Pool
 
 from misc_QM.special_functions  import sph_harm_xyz
 
-class Sph_harm_deco_misner:
-    def __init__(self, a_maxN, a_maxL, a_delta):
+class Sph_harm_deco_misner_A1:
+    def __init__(self, a_maxN, a_inLs, a_delta):
         """
         Brief: Constructor of the class.
         
@@ -22,15 +22,15 @@ class Sph_harm_deco_misner:
         - a_maxN  (scalar integer): #.basis for the complete set in the radial direction
         .                           to be used for the calculation.
         
-        - a_maxL  (scalar integer): #.basis for the spherical harmonics to be used,
-        .                           where M is selected as -L <= M <= L for each L.
+        - a_inLs[N_L] (1-dim list): Basis for the spherical harmonics to be used,
+        .                           where M is selected as M = 4*n (n \in N) for each L.
         
         - a_delta (scalar  float ): Thickness of the spherical shell (S), defined as
         .                           S = { (r,theta,phi) | R - delta <= r < R + delta } 
         .                           for each R.
         """
         self.maxN     = a_maxN.real
-        self.maxL     = a_maxL.real
+        self.inLs     = a_inLs.real
         self.delta    = a_delta.real
         self.calcR    = None
         self.oRlm_all = None
@@ -38,8 +38,8 @@ class Sph_harm_deco_misner:
         # Index table for (n,l,m)
         self.nlm_t = [(n,l,m) 
                       for n in range(self.maxN+1) 
-                      for l in range(self.maxL+1) 
-                      for m in range(-l,l+1)]
+                      for l in self.inLs 
+                      for m in range(l//4*(-4),l//4*4+1,4)]
         self.N_nlm = len(self.nlm_t)
         self.i_nlm = {}
         for i in range(self.N_nlm):
@@ -47,8 +47,8 @@ class Sph_harm_deco_misner:
         
         # Index table for (l,m)
         self.lm_t = [(l,m) 
-                      for l in range(self.maxL+1) 
-                      for m in range(-l,l+1)]
+                      for l in self.inLs 
+                      for m in range(l//4*(-4),l//4*4+1,4)]
         self.N_lm = len(self.lm_t)
         self.i_lm = {}
         for i in range(self.N_lm):
@@ -86,7 +86,7 @@ class Sph_harm_deco_misner:
         Brief: Set data points (coordinats) to be calculated.
         
         For arguments,
-        - a_R          [   #.output-data] (1-dim ndarray):
+        - a_R [#.output-data] (1-dim ndarray):
         . Values of the r-coordinate for output data.
         
         - a_rzyx_coords[4, #.data-points] (2-dim ndarray):
@@ -156,14 +156,14 @@ class Sph_harm_deco_misner:
         conj_adj_Ynlm = conj(dot(Ynlm.T, inv(Gmat)))
         
         oRlm = array([sum(array([self.cmpl_set_Rn_at_R(n, self.calcR[i]) *
-                                 conj_adj_Ynlm[:,self.i_nlm[n,l,m]]
+                                 conj_adj_Ynlm[:,self.i_nlm[n,lm[0],lm[1]]]
                                  for n in range(self.maxN+1)]), axis=0) * omg
-                      for l in range(self.maxL+1) for m in range(-l,l+1)])
+                      for lm in self.lm_t])
         
         lap_oRlm = array([sum(array([self.cmpl_set_lap_Rn_at_R(n, self.calcR[i]) *
-                                     conj_adj_Ynlm[:,self.i_nlm[n,l,m]]
+                                     conj_adj_Ynlm[:,self.i_nlm[n,lm[0],lm[1]]]
                                      for n in range(self.maxN+1)]), axis=0) * omg
-                          for l in range(self.maxL+1) for m in range(-l,l+1)])
+                          for lm in self.lm_t])
         
         return array([oRlm, lap_oRlm])
     
@@ -206,11 +206,8 @@ class Sph_harm_deco_misner:
         if (self.oRlm_all is None):
             print("\nERROR: The orthogonal basis have not been calculated.\n")
             return None
-        if (a_l > self.maxL):
-            print("\nERROR: a_l = %d is too large than maxL = %d.\n" % (a_l, self.maxL))
-            return None
-        if (a_m < -a_l or a_l < a_m):
-            print("\nERROR: Invalid value: a_m = %d.\n" % a_m)
+        if ((a_l,a_m) not in self.lm_t):
+            print("\nERROR: (a_l,a_m) = (%d,%d) is not defined.\n" % (a_l,a_m))
             return None
         
         if (a_get_laplacian):

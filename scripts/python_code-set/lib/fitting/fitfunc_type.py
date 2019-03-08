@@ -24,7 +24,7 @@ def get_Nparam_from_fname(a_fname):
         return 3
     elif (a_fname == '4P' or a_fname == '2E' or a_fname == '2G' or a_fname == '2CH'):
         return 4
-    elif (a_fname == '5P' or a_fname == '1G1Y'):
+    elif (a_fname == '5P' or a_fname == '1G1Y' or a_fname == '1G1Ysq'):
         return 5
     elif (a_fname == '6P'  or a_fname == '3E' or a_fname == '3G'   or a_fname == '3CH' or 
           a_fname == '2SG' or a_fname == '2Y' or a_fname == '2Ysq' or a_fname == '2Ytns'):
@@ -90,6 +90,8 @@ def set_fitfunc_from_fname(a_fname):
         return fitfunc_1G1Y
     elif (a_fname == '2G1Y'):
         return fitfunc_2G1Y
+    elif (a_fname == '1G1Ysq'):
+        return fitfunc_1G1Ysq
     elif (a_fname == '2G1Ysq'):
         return fitfunc_2G1Ysq
     elif (a_fname == '3G1Ysq'):

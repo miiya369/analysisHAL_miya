@@ -2,7 +2,7 @@
 
 """The module to calculate the potential by HAL QCD method on the lattice."""
 
-from lattice.calc_laplacian import lap, lap_4th_proc
+from lattice.calc_laplacian import lap, lap_4th_prec
 
 def calc_potential_t2(a_Rm, a_R0, a_Rp, a_mass):
     """
@@ -19,7 +19,7 @@ def calc_potential_t2(a_Rm, a_R0, a_Rp, a_mass):
     l_mu = (a_mass[0] * a_mass[1]) / (a_mass[0] + a_mass[1])
     l_dl = (a_mass[0] - a_mass[1]) / (a_mass[0] + a_mass[1])
     
-    return (lap_4th_proc(a_R0) / (2.0*l_mu) +
+    return (lap_4th_prec(a_R0) / (2.0*l_mu) +
             (a_Rm - a_Rp) / 2.0 +
             (a_Rm + a_Rp - 2.0*a_R0) * (1.0+3.0*l_dl**2) / (8.0*l_mu)
             ) / a_R0
@@ -39,7 +39,7 @@ def calc_potential_t1(a_Rm, a_R0, a_Rp, a_mass):
     l_mu = (a_mass[0] * a_mass[1]) / (a_mass[0] + a_mass[1])
     l_dl = (a_mass[0] - a_mass[1]) / (a_mass[0] + a_mass[1])
     
-    return (lap_4th_proc(a_R0) / (2.0*l_mu) +
+    return (lap_4th_prec(a_R0) / (2.0*l_mu) +
             (a_Rm - a_Rp) / 2.0
             ) / a_R0
 
@@ -59,7 +59,7 @@ def calc_potential_t2_num(a_Rm, a_R0, a_Rp, a_mass):
     l_mu = (a_mass[0] * a_mass[1]) / (a_mass[0] + a_mass[1])
     l_dl = (a_mass[0] - a_mass[1]) / (a_mass[0] + a_mass[1])
     
-    return (lap_4th_proc(a_R0) / (2.0*l_mu) +
+    return (lap_4th_prec(a_R0) / (2.0*l_mu) +
             (a_Rm - a_Rp) / 2.0 +
             (a_Rm + a_Rp - 2.0*a_R0) * (1.0+3.0*l_dl**2) / (8.0*l_mu)
             )
@@ -80,6 +80,6 @@ def calc_potential_t1_num(a_Rm, a_R0, a_Rp, a_mass):
     l_mu = (a_mass[0] * a_mass[1]) / (a_mass[0] + a_mass[1])
     l_dl = (a_mass[0] - a_mass[1]) / (a_mass[0] + a_mass[1])
     
-    return (lap_4th_proc(a_R0) / (2.0*l_mu) +
+    return (lap_4th_prec(a_R0) / (2.0*l_mu) +
             (a_Rm - a_Rp) / 2.0
             )
